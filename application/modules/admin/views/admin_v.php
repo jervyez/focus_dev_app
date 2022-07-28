@@ -2608,6 +2608,141 @@
 
 
 
+<!-- contractor_feedback here -->
+
+<div class="" id="contractor_feedback"><p>&nbsp;<br />&nbsp;</p></div>
+
+
+	<div class="box yellow-border m-top-10 contractor_feedback_settings" id="">
+		<div class="box-head yellow-bg pad-5">
+			<label class="yellow-title"><i class="fa fa-cube fa-lg"></i> Contractor Feedback Settings</label>
+		</div>
+		<div class="box-area clearfix ">
+			<div class="col-xs-12 col-md-6 clearfix pad-10">
+
+				<?php if(isset( $_GET['feeback_deleted']) && $_GET['feeback_deleted'] > 0   ): ?>
+					<div class="no-pad-t">
+						<div class="border-less-box alert alert-success fade in pad-10">
+							<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+							Feedback is now removed.
+						</div>
+					</div>
+				<?php endif; ?>
+
+				<?php if(isset( $_GET['edit_cfb']) && $_GET['edit_cfb'] > 0   ): ?>
+
+					<?php //echo '<pre>';var_dump($feedback_details );echo '</pre>';  ?>
+												
+					<p class="h4" style="font-size: 16px;">
+						<strong>Edit Feedback</strong>
+						<a href="<?php echo base_url(); ?>admin#contractor_feedback" id="" class="btn btn-xs btn-warning pull-right">Cancel Edit</a>
+					</p>
+					<hr style="margin: 0px; padding: 3px 0px 5px;">
+
+					<form method="post" action="<?php echo base_url(); ?>admin/edit_feedback">
+						<input type="hidden" name="feedback_edt_id" value="<?php echo $feedback_details['feedback_id']; ?>">
+						<div class="input-group m-bottom-10">
+							<span class="input-group-addon">Start Range</span>
+							<input name="feedback_edt_start_range" min="0" max="100" step="any" type="number" autocomplete="off" placeholder="0.00" value="<?php echo $feedback_details['feedback_start_range']; ?>" class="form-control">
+							<span class="input-group-addon">%</span>
+
+						</div>
+						<div class="input-group m-bottom-10">
+
+							<span class="input-group-addon">End Range</span>
+							<input name="feedback_edt_end_range" min="0" max="100" step="any" type="number" autocomplete="off" placeholder="0.00"  value="<?php echo $feedback_details['feedback_end_range']; ?>" class="form-control">
+							<span class="input-group-addon">%</span>
+						</div>
+
+						<div class="input-group m-bottom-10">
+							<span class="input-group-addon">Is Primary</span>
+							<select id="feedback_edt_id_prime" name="feedback_edt_id_prime" tabindex="-1" class="form-control">
+								<option value="0"> No </option>
+								<option value="1"> Yes </option>
+							</select>
+						</div>
+
+						<div class="input-group m-bottom-10">
+							<span class="input-group-addon"><i class="fa fa-envelop"></i> Details</span>
+							<input type="text" placeholder="Details" name="feedback_edt_details" autocomplete="off" value="<?php echo $feedback_details['feedback_statement']; ?>" class="form-control">
+							<span class="input-group-btn"><input type="submit" value="Save" class="btn btn-info"></span>
+						</div>	
+
+						<div class="input-group m-bottom-10">
+							<a href="<?php echo base_url(); ?>admin/del_feedback/<?php echo $feedback_details['feedback_id']; ?>" class="btn btn-danger">Delete Feedback</a>
+						</div>
+					</form>
+					<script type="text/javascript"> $('#feedback_edt_id_prime').val('<?php echo $feedback_details['is_prime']; ?>');  </script>
+
+
+
+				<?php else: ?>
+
+
+					<p class="h4" style="font-size: 16px;">
+						<strong>Set Feedback</strong>
+					</p>
+					<hr style="margin: 0px; padding: 3px 0px 5px;">
+
+					<form method="post" action="<?php echo base_url(); ?>admin/add_feedback">
+						<div class="input-group m-bottom-10">
+							<span class="input-group-addon">Start Range</span>
+							<input name="start_range" min="0" max="100" step="5" type="number" onclick="this.select()" autocomplete="off" value="0.00" placeholder="0.00" class="form-control">
+							<span class="input-group-addon">%</span>
+						</div>
+
+						<div class="input-group m-bottom-10">
+							<span class="input-group-addon">End Range</span>
+							<input name="end_rage" min="0" max="100" step="5" type="number" onclick="this.select()" autocomplete="off" value="0.00" placeholder="0.00" class="form-control">
+							<span class="input-group-addon">%</span>
+						</div>
+
+						<div class="input-group m-bottom-10">
+							<span class="input-group-addon"><i class="fa fa-envelop"></i> Details</span>
+							<input type="text" placeholder="Details" name="feedback_statement" autocomplete="off" value="" class="form-control">
+							<span class="input-group-btn"><input type="submit" value="Save" class="btn btn-primary"></span>
+						</div>
+					</form>
+
+
+
+
+				<?php endif; ?>
+
+
+
+
+			</div>
+
+			<div class="col-xs-12 col-md-6 clearfix pad-10">
+				<p class="h4" style="font-size: 16px;">
+					<strong>Contractor Feedbacks</strong>
+				</p>
+				<hr style="margin: 0px; padding: 3px 0px 5px;">
+					
+				<?php foreach($contractor_feedbacks as $feedback): ?>
+					<div id="" class="m-bottom-15" >
+						<p id="">
+							<em class="fa fa-chevron-circle-right"></em>
+							<strong>
+								<?php echo $feedback->feedback_statement; ?>
+								<?php if($feedback->is_prime == 1){ echo ' &nbsp; <span class="label label-success">Primary</span>'; } ?>
+							</strong>
+							<a href="<?php echo base_url();  ?>admin?edit_cfb=<?php echo $feedback->feedback_id; ?>#contractor_feedback" id="" class="btn btn-xs btn-info pull-right">Edit</a>
+						</p>
+					</div>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	</div>
+
+
+<!-- contractor_feedback here-->
+
+
+
+
+
 
 										</div>
 									</div>
@@ -6375,6 +6510,7 @@ function bgDatEdit(myId){
 									<p id="induction_slide_defaults" class="amn_mnu_lnks pointer"><i class="fa fa-chevron-circle-right" aria-hidden="true"></i> &nbsp;Induction Slide Defaults</p>
 									<p id="archive_documents_settings" class="amn_mnu_lnks pointer"><i class="fa fa-chevron-circle-right" aria-hidden="true"></i> &nbsp;Archive Documents Settings</p>
 									<p id="client_supply_settings" class="amn_mnu_lnks pointer"><i class="fa fa-chevron-circle-right" aria-hidden="true"></i> &nbsp;Client Supply Settings</p>
+									<p id="contractor_feedback_settings" class="amn_mnu_lnks pointer"><i class="fa fa-chevron-circle-right" aria-hidden="true"></i> &nbsp;Contractor Feedback Settings</p>
 								</div>
 
 

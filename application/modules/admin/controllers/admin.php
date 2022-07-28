@@ -14,7 +14,6 @@ class Admin extends MY_Controller{
 		$this->load->model('induction_health_safety_m');
 		
 		$this->load->model('admin_m'); 
-
 		$this->load->helper('file');
 		
 		if(isset($_GET['rem_loc_id'])){
@@ -482,10 +481,6 @@ class Admin extends MY_Controller{
 
 
 
-
-
-
-
 			$data['warranty_months'] = $data_b['warranty_months'];
 			$data['warranty_years'] = $data_b['warranty_years'];
 			$data['prj_review_day'] = $data_sd['prj_review_day'];
@@ -677,6 +672,17 @@ class Admin extends MY_Controller{
 			$data['users'] = $fetch_user->result();
 
 
+			$contractor_feedbacks = $this->admin_m->get_contractor_feedbacks();
+			$data['contractor_feedbacks'] = $contractor_feedbacks->result();
+
+
+			if(isset($_GET['edit_cfb']) && $_GET['edit_cfb'] != "" ){
+				$feedback_id = $_GET['edit_cfb'];
+				$feedback_view_q = $this->admin_m->get_feedback_details($feedback_id);
+				$data['feedback_details'] = array_shift($feedback_view_q->result_array());
+			}
+
+
 
 
 			$fetch_archive_types = $this->admin_m->get_archive_types();
@@ -778,6 +784,42 @@ class Admin extends MY_Controller{
 		$day = $this->security->xss_clean($this->input->post('ajax_var'));
 		$this->admin_m->update_prj_day_rev($day);		
 	}
+
+	public function add_feedback(){
+
+		$start_range = $_POST['start_range'];
+		$end_rage = $_POST['end_rage'];
+		$feedback_statement = $_POST['feedback_statement'];
+
+		$this->admin_m->add_contractor_feedback($start_range, $end_rage, $feedback_statement);
+		redirect('/admin#contractor_feedback');
+	}
+
+	public function edit_feedback(){
+
+		$feedback_id = $_POST['feedback_edt_id'];
+		$start_range = $_POST['feedback_edt_start_range'];
+		$end_range = $_POST['feedback_edt_end_range'];
+		$is_prime = $_POST['feedback_edt_id_prime'];
+		$statement = $_POST['feedback_edt_details'];
+
+		if($is_prime == 1){
+			$this->admin_m->contractor_feedback_prime();
+		}
+
+		$this->admin_m->edit_contractor_feedback($start_range,$end_range,$statement,$is_prime,$feedback_id);
+		redirect('/admin#contractor_feedback');
+
+	}
+
+	public function del_feedback($feedback_id){
+		$feedback_statement = $feedback_id;
+
+		$this->admin_m->disable_feedback($feedback_statement);
+		redirect('/admin?feeback_deleted=1#contractor_feedback');
+
+	}
+
 
 
 	public function archive_documents_settings(){

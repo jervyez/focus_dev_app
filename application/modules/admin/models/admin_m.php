@@ -94,6 +94,35 @@ class Admin_m extends CI_Model{
 		$this->db->query("UPDATE `static_defaults` SET `$area` = '$updated_values'  WHERE `static_defaults`.`static_defaults_id` = '1' ");
 	}
 
+	public function get_contractor_feedbacks(){
+		$query = $this->db->query(" SELECT * FROM `contractor_feedback` WHERE `contractor_feedback`.`is_active` = '1' 
+			ORDER BY CAST(`contractor_feedback`.`feedback_start_range` AS UNSIGNED) , CAST(`contractor_feedback`.`feedback_end_range` AS UNSIGNED) ASC ");
+		return $query;
+	}
+
+	public function edit_contractor_feedback($start_range,$end_range,$statement,$is_prime,$feedback_id){
+		$query = $this->db->query(" UPDATE `contractor_feedback` SET `feedback_start_range` = '$start_range', `feedback_end_range` = '$end_range', 
+			`feedback_statement` = '$statement', `is_prime` = '$is_prime' WHERE `contractor_feedback`.`feedback_id` = '$feedback_id' ");
+		return $query;
+	}
+
+	public function contractor_feedback_prime(){
+		$this->db->query("UPDATE `contractor_feedback` SET `is_prime` = '0'");
+	}
+
+	public function disable_feedback($id){
+		$this->db->query("UPDATE `contractor_feedback` SET `is_active` = '0'  WHERE `contractor_feedback`.`feedback_id` = '$id' ");
+	}
+
+	public function add_contractor_feedback($feedback_start_range, $feedback_end_range, $feedback_statement){
+			$this->db->query(" INSERT INTO `contractor_feedback` ( `feedback_start_range`, `feedback_end_range`, `feedback_statement`) VALUES ( '$feedback_start_range', '$feedback_end_range', '$feedback_statement') ");
+	}
+
+	public function get_feedback_details($id){
+		$query = $this->db->query(" SELECT * FROM `contractor_feedback` WHERE `contractor_feedback`.`feedback_id` = '$id' ");
+		return $query;
+	}
+
 
 
 	public function update_closing_settings($swtich_time, $swtich_alert, $swtich_msg){
