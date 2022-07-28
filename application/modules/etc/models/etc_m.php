@@ -33,6 +33,10 @@ class Etc_m extends CI_Model{
 		return $query;
 	}
 
+	public function list_group_contractors_per_selected($works_contrator_id){
+		$query = $this->db->query("SELECT  `work_contractors`.`works_contrator_id`,`work_contractors`.`ex_gst` FROM `work_contractors` WHERE`work_contractors`.`works_id` IN ( SELECT `wc_a`.`works_id` FROM `work_contractors` `wc_a` WHERE `wc_a`.`works_contrator_id` = '$works_contrator_id' ) ORDER BY `work_contractors`.`is_selected` DESC");
+		return $query;
+	}
 
 
 	public function get_joineryDetails($works_id,$distinct_character){
@@ -57,6 +61,31 @@ class Etc_m extends CI_Model{
 	public function insert_work_reminder($project_id, $estimator_id, $work_contractors_id ){
 		 $this->db->query(" INSERT INTO `cqr_reminder` ( `project_id`, `estimator_id`, `work_contractors_id`) VALUES ( '$project_id', '$estimator_id', '$work_contractors_id') ");
 	}
+
+	public function get_prime_feedback(){
+		$query = $this->db->query(" SELECT * FROM `contractor_feedback` WHERE `contractor_feedback`.`is_active` = '1' AND `contractor_feedback`.`is_prime` = '1'   ");
+		return $query;
+	}
+
+	public function get_cont_feedbacks($value){
+		$query = $this->db->query(" SELECT * FROM `contractor_feedback` 
+			WHERE `contractor_feedback`.`is_active` = '1' 
+			AND CAST(`contractor_feedback`.`feedback_start_range` AS DECIMAL(4,2)) <= '$value' 
+			AND CAST(`contractor_feedback`.`feedback_end_range` AS DECIMAL(4,2)) >= '$value'
+			AND CAST(`contractor_feedback`.`feedback_end_range` AS DECIMAL(4,2)) > 0
+			AND `contractor_feedback`.`is_prime` != '1'  ");
+		return $query;
+	}
+
+	public function get_zero_quote_feedback(){
+		$query = $this->db->query(" SELECT * FROM `contractor_feedback` WHERE  `contractor_feedback`.`is_active` = '1'
+			AND CAST(`contractor_feedback`.`feedback_start_range` AS DECIMAL(4,2)) = 0
+			AND CAST(`contractor_feedback`.`feedback_end_range` AS DECIMAL(4,2)) = 0
+			AND `contractor_feedback`.`is_prime` = '0' ");
+		return $query;
+	}
+
+
 
 	public function set_remind_day_before($reminder_id,$date){
 		$this->db->query(" UPDATE `cqr_reminder` SET `day_left_remind` = '$date' WHERE `cqr_reminder`.`cqr_reminder_id` = '$reminder_id' ");

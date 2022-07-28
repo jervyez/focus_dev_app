@@ -3606,6 +3606,7 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 		$user_id = $this->session->userdata('user_id');
 
 		$selected_work_contractor_id = $_POST['selected_work_contractor_id'];
+		
 
 		$from = 'jervy@focusshopfit.com.au';
 		$to = 'jervyezaballa@gmail.com';
@@ -3613,9 +3614,139 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 		$email_msg = 'test content';
 
 		if($user_id == 2){
-			echo $selected_work_contractor_id.' ok';
-			$this->set_send_email($from,$to,$subject,$email_msg); // done
+
+
+
+			$q_contractors = $this->etc_m->list_group_contractors_per_selected($selected_work_contractor_id);
+
+			foreach ($q_contractors->result() as $works_contractor){
+				if($selected_work_contractor_id == $works_contractor->works_contrator_id){
+					$selected_price = $works_contractor->ex_gst;
+				}
+			}
+
+
+			foreach ($q_contractors->result() as $works_contractor){
+
+				$email_contents = '';
+
+
+				if($selected_work_contractor_id == $works_contractor->works_contrator_id){
+
+					$q_feedback = $this->etc_m->get_prime_feedback();
+					$contractor_feedback = array_shift($q_feedback->result() );
+					$quoted_price = $selected_price;
+
+					echo '0 <---- ';
+
+				
+
+					
+				}else{
+
+					if(floatval($selected_price) < 0 || !isset($selected_price)){
+						$selected_price = 1;
+					}
+
+					if(floatval($works_contractor->ex_gst) > 0 || isset($works_contractor->ex_gst)){
+						
+
+						$diff_value = ( ( $works_contractor->ex_gst - $selected_price ) / $selected_price ) * 100;
+						$diff_value =  round(abs($diff_value) ,2);
+
+						if($diff_value > 100){
+							$quoted_price = 0;
+						}else{
+							$quoted_price = $works_contractor->ex_gst;
+
+						}
+
+					}else{
+						$quoted_price = 0;
+						$diff_value = 100;
+					}
+
+
+					echo $diff_value.' ~!!<---- ';
+
+
+
+
+					if($quoted_price > 0){
+
+						$q_feedback = $this->etc_m->get_cont_feedbacks($diff_value);
+						$contractor_feedback = array_shift($q_feedback->result() );
+
+					}else{
+
+						$q_feedback = $this->etc_m->get_zero_quote_feedback();
+						$contractor_feedback = array_shift($q_feedback->result() );
+					}
+
+					echo $quoted_price.'< we sorry, but we find your quote '.$contractor_feedback->feedback_statement.'
+
+
+					';
+				}
+
+
+
+
+				$work_contractor_q = $this->etc_m->get_work_contractor_details($works_contractor->works_contrator_id);
+				$row = array_shift($work_contractor_q->result() );
+
+				$q_client_details = $this->etc_m->display_company_detail_by_id($row->client_id,$row->is_pending_client);
+				$client = array_shift($q_client_details->result());
+
+				$company_contractor_name = '';
+				if($row->is_pending == 1){
+					$q_pending_contractor = $this->etc_m->display_company_detail_by_id($row->company_id,1);
+					$pending_contractor = array_shift($q_pending_contractor->result());
+					$file_company_name = strtolower( str_replace(' ', '_', $pending_contractor->company_name )  );
+					$company_contractor_name = $pending_contractor->company_name;
+				}else{
+					$company_contractor_name = $row->company_name;
+				}
+
+				$q_sender_contact = $this->etc_m->fetch_user($user_id); // $row->project_manager_id
+				$sender_contact = array_shift($q_sender_contact->result());
+				$from = $sender_contact->general_email;
+
+				$to = $row->general_email;
+
+				if($row->is_pending == 1){
+					$to = $pending_contractor->email;
+				}
+
+
+				$email_contents = '<p class="">Greetings,<br /></p><p class="">Your quoted price has been reviewed and </p><p class="">If you have any questions or there is any other information required, please contact me through '.$from.'. <br />';
+				$email_contents .= 'We hope for a long business relationship with your company.</p>';
+
+
+
+
+				$subject = 'Contractor Feedback: '.$client->company_name.' - '.$row->project_id.' '.$row->project_name.' - '.$company_contractor_name;
+				$email_msg = '<div style="font-family: verdana,sans-serif; font-size:12px; ">'.$email_contents.'</div>';
+
+			//	echo '<pre>';var_dump($works_contractor->ex_gst );echo '</pre>'; 
+
+			}
+
+
+
+
+			// $this->set_send_email($from,$to,$subject,$email_msg); // done
+
+
+
 		}
+
+
+
+
+
+
+
 	}
 
 	public function send_to_contractor_view(){
