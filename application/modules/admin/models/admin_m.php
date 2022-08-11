@@ -100,6 +100,15 @@ class Admin_m extends CI_Model{
 		return $query;
 	}
 
+	public function update_feedback_emails($email,$type=1){ // type = 1 for success tender
+
+		if($type == 1){
+			$this->db->query("UPDATE `static_defaults` SET `selected_contractor_email` = '$email' WHERE `static_defaults`.`static_defaults_id` = '1' ");
+		}else{
+			$this->db->query("UPDATE `static_defaults` SET `unsuccessful_contractor_email` = '$email' WHERE `static_defaults`.`static_defaults_id` = '1' ");
+		}
+	}
+
 	public function edit_contractor_feedback($start_range,$end_range,$statement,$is_prime,$feedback_id){
 		$query = $this->db->query(" UPDATE `contractor_feedback` SET `feedback_start_range` = '$start_range', `feedback_end_range` = '$end_range', 
 			`feedback_statement` = '$statement', `is_prime` = '$is_prime' WHERE `contractor_feedback`.`feedback_id` = '$feedback_id' ");

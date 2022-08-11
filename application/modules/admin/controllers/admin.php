@@ -992,17 +992,28 @@ class Admin extends MY_Controller{
 			}
 
 			public function update_reminder_settings(){
- 
- 
 				$grace_period_mins = $this->input->post('grace_period_mins');
 				$days_before_due = $this->input->post('days_before_due');
 				$hrs_before_due = $this->input->post('hrs_before_due');
-
-
 				$this->admin_m->updateReminderTimings($grace_period_mins,$days_before_due,$hrs_before_due);
 				redirect('/admin?scroll=cqr_email_template');
-
 			}
+
+			public function update_fbck_success_email(){
+				$email = $this->input->post('fbck_success_email');
+				$this->admin_m->update_feedback_emails($email,1); // type = 1 for success tender
+				redirect('/admin#contractor_feedback');
+			}
+
+			public function update_fbck_unsuccessful_email(){
+				$email = $this->input->post('fbck_unsuccessful_email');
+				$this->admin_m->update_feedback_emails($email,2); // type = 1 for success tender
+				redirect('/admin#contractor_feedback');
+			}
+
+
+
+			
 
 
 

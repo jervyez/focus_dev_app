@@ -2657,6 +2657,9 @@
 						<div class="input-group m-bottom-10">
 							<span class="input-group-addon">Is Primary</span>
 							<select id="feedback_edt_id_prime" name="feedback_edt_id_prime" tabindex="-1" class="form-control">
+								<?php if($feedback_details['is_prime'] == 1): ?>
+									<option value="1" selected class="hide"> Yes </option>
+								<?php endif; ?>
 								<option value="0"> No </option>
 								<option value="1"> Yes </option>
 							</select>
@@ -2672,7 +2675,6 @@
 							<a href="<?php echo base_url(); ?>admin/del_feedback/<?php echo $feedback_details['feedback_id']; ?>" class="btn btn-danger">Delete Feedback</a>
 						</div>
 					</form>
-					<script type="text/javascript"> $('#feedback_edt_id_prime').val('<?php echo $feedback_details['is_prime']; ?>');  </script>
 
 
 
@@ -2733,6 +2735,31 @@
 					</div>
 				<?php endforeach; ?>
 			</div>
+
+			<div class="clearfix"></div>
+
+			<div class="col-xs-12 col-md-6 clearfix pad-10">
+				<form method="post" autocomplete="off" action="<?php echo current_url(); ?>/update_fbck_success_email">
+					<p class="h4" style="font-size: 16px;">
+						<strong><i class="fa fa-envelope-o" aria-hidden="true"></i> Success Email</strong>
+						<button type="submit" class="btn btn-xs btn-warning pull-right"><i class="fa fa-floppy-o"></i> Update</button>
+					</p>
+					<hr style="margin: 0px; padding: 3px 0px 5px;">
+					<textarea id="fbck_success_email" name="fbck_success_email" class="form-control" style="height: 250px;"><?php echo  $static_defaults[0]->selected_contractor_email; ?></textarea>
+				</form>
+			</div>
+
+			<div class="col-xs-12 col-md-6 clearfix pad-10">
+				<form method="post" autocomplete="off" action="<?php echo current_url(); ?>/update_fbck_unsuccessful_email">
+					<p class="h4" style="font-size: 16px;">
+						<strong><i class="fa fa-envelope-o" aria-hidden="true"></i> Unsuccessful Email</strong>
+						<button type="submit" class="btn btn-xs btn-warning pull-right"><i class="fa fa-floppy-o"></i> Update</button>
+					</p>
+					<hr style="margin: 0px; padding: 3px 0px 5px;">
+					<textarea id="fbck_unsuccessful_email" name="fbck_unsuccessful_email" class="form-control" style="height: 250px;"><?php echo  $static_defaults[0]->unsuccessful_contractor_email; ?></textarea>
+				</form>
+			</div>
+
 		</div>
 	</div>
 
