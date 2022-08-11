@@ -3423,7 +3423,7 @@ foreach ($admin_defaults->result() as $row){
 				 	<div id="" class="pad-10 block heigh-auto" style="height:490px;">
 				 		 <p id="" class="">';
 
-
+/*
 				 		 foreach ($arr_details_lines as $key => $value) {
 
 				 		 	if(strlen($value) > 115){
@@ -3448,8 +3448,8 @@ foreach ($admin_defaults->result() as $row){
 				 		 	}	
 
 				 		 }
-
-				 		 /*
+*/
+				 		 
 
 				 		 foreach ($arr_details_lines as $key => $value) {
 				 		 	$html['contents'] .= $value.'<br />';
@@ -3459,7 +3459,7 @@ foreach ($admin_defaults->result() as $row){
 
 				 		 }
 
-*/
+
 
 
 
@@ -3606,15 +3606,19 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 		$user_id = $this->session->userdata('user_id');
 
 		$selected_work_contractor_id = $_POST['selected_work_contractor_id'];
-		
+		$con_feedbacks_arr = array();
 
-		$from = 'jervy@focusshopfit.com.au';
-		$to = 'jervyezaballa@gmail.com';
-		$subject = 'test sendout';
-		$email_msg = 'test content';
 
-		if($user_id == 2){
 
+		$from = '';
+		$to = '';
+		$subject = '';
+		$email_msg = '';
+
+		if($user_id == 2 || $user_id == 3){
+
+			$q_email_feedbacks = $this->etc_m->get_email_feedbacks();
+			$email_feedback = array_shift($q_email_feedbacks->result() );
 
 
 			$q_contractors = $this->etc_m->list_group_contractors_per_selected($selected_work_contractor_id);
@@ -3622,77 +3626,58 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 			foreach ($q_contractors->result() as $works_contractor){
 				if($selected_work_contractor_id == $works_contractor->works_contrator_id){
 					$selected_price = $works_contractor->ex_gst;
+					break;
 				}
+			}
+
+			if($selected_price == 0 || !isset($selected_price) ){
+				$selected_price = 1;
 			}
 
 
 			foreach ($q_contractors->result() as $works_contractor){
 
-				$email_contents = '';
 
 
 				if($selected_work_contractor_id == $works_contractor->works_contrator_id){
 
 					$q_feedback = $this->etc_m->get_prime_feedback();
 					$contractor_feedback = array_shift($q_feedback->result() );
-					$quoted_price = $selected_price;
-
-					echo '0 <---- ';
-
-				
-
+					$con_feedbacks_arr[$works_contractor->works_contrator_id] = $contractor_feedback->feedback_statement;
+				//	$quoted_price = $selected_price;
 					
 				}else{
 
-					if(floatval($selected_price) < 0 || !isset($selected_price)){
-						$selected_price = 1;
-					}
+					if( floatval($works_contractor->ex_gst) > 0  && ($selected_work_contractor_id != $works_contractor->works_contrator_id)    ){
 
-					if(floatval($works_contractor->ex_gst) > 0 || isset($works_contractor->ex_gst)){
-						
 
 						$diff_value = ( ( $works_contractor->ex_gst - $selected_price ) / $selected_price ) * 100;
 						$diff_value =  round(abs($diff_value) ,2);
 
-						if($diff_value > 100){
-							$quoted_price = 0;
-						}else{
-							$quoted_price = $works_contractor->ex_gst;
-
+						if($diff_value >= 100){
+							$diff_value = 99.99;
 						}
-
-					}else{
-						$quoted_price = 0;
-						$diff_value = 100;
-					}
-
-
-					echo $diff_value.' ~!!<---- ';
-
-
-
-
-					if($quoted_price > 0){
 
 						$q_feedback = $this->etc_m->get_cont_feedbacks($diff_value);
 						$contractor_feedback = array_shift($q_feedback->result() );
+						$con_feedbacks_arr[$works_contractor->works_contrator_id] = $contractor_feedback->feedback_statement;
 
-					}else{
-
-						$q_feedback = $this->etc_m->get_zero_quote_feedback();
-						$contractor_feedback = array_shift($q_feedback->result() );
 					}
-
-					echo $quoted_price.'< we sorry, but we find your quote '.$contractor_feedback->feedback_statement.'
-
-
-					';
 				}
 
+			}
 
 
 
-				$work_contractor_q = $this->etc_m->get_work_contractor_details($works_contractor->works_contrator_id);
+
+
+			foreach ($con_feedbacks_arr as $works_contrator_id => $con_fb_message) {
+
+			
+				$email_contents = '';
+				
+
+				$work_contractor_q = $this->etc_m->get_work_contractor_details($works_contrator_id);
 				$row = array_shift($work_contractor_q->result() );
 
 				$q_client_details = $this->etc_m->display_company_detail_by_id($row->client_id,$row->is_pending_client);
@@ -3708,7 +3693,18 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 					$company_contractor_name = $row->company_name;
 				}
 
-				$q_sender_contact = $this->etc_m->fetch_user($user_id); // $row->project_manager_id
+				if($row->project_estiamator_id > 0){
+					$sender_id = $row->project_estiamator_id;
+
+				}else{
+					$sender_id = $row->project_manager_id;
+				}
+
+				
+
+
+
+				$q_sender_contact = $this->etc_m->fetch_user($sender_id); // $row->project_manager_id
 				$sender_contact = array_shift($q_sender_contact->result());
 				$from = $sender_contact->general_email;
 
@@ -3719,23 +3715,96 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 				}
 
 
-				$email_contents = '<p class="">Greetings,<br /></p><p class="">Your quoted price has been reviewed and </p><p class="">If you have any questions or there is any other information required, please contact me through '.$from.'. <br />';
-				$email_contents .= 'We hope for a long business relationship with your company.</p>';
 
+
+				if($row->contractor_type == 2){
+					$work_job_name = $row->job_sub_cat;
+				}else{
+					$work_job_name = $row->supplier_cat_name;
+				}
+
+				if($work_job_name == 'Other'){
+					$work_job_name = $row->other_work_desc;
+				}
+
+
+
+				$work_contractor_joinery = $this->etc_m->get_work_contractor_joinery($works_contrator_id);
+
+				if($work_contractor_joinery->num_rows > 0){
+
+					$work_joinery_id = array_shift($work_contractor_joinery->result() );
+					$distinct_character = preg_replace('/[0-9]+/', '', $work_joinery_id->works_id);
+					$joinery_work_q = $this->etc_m->get_joineryDetails($work_joinery_id->works_id,$distinct_character);
+
+					if($joinery_work_q->num_rows > 0){
+						$joinery_work_details = array_shift($joinery_work_q->result() );
+						$work_job_name = 'Joinery - '.$joinery_work_details->joinery_name;
+					}
+
+				}
+
+
+
+				if($selected_work_contractor_id == $works_contrator_id){
+					$fb_email_message = '<p>'.$email_feedback->selected_contractor_email.'</p>';
+				}else{
+					$fb_email_message = '<p>'.$email_feedback->unsuccessful_contractor_email.'</p>';
+				}
+
+
+				$email_contents = str_replace('<works_desc>',$work_job_name,$fb_email_message);
+				$email_contents = str_replace('<client_name>',$client->company_name,$email_contents);
+				$email_contents = str_replace('<tendered_amount>',$row->ex_gst,$email_contents);
+				$email_contents = str_replace('<contractor_name>',$company_contractor_name,$email_contents);
+				$email_contents = str_replace('<feedback>',$con_fb_message,$email_contents);
+				$email_contents = str_replace('<sender_email>',$from,$email_contents);
+				$email_contents = nl2br($email_contents);
+
+
+
+
+				$user_signature_q = $this->etc_m->get_user_email_signature($row->focus_company_id);
+				$user_signature = array_shift($user_signature_q->result() );
+
+
+
+				$email_contents .= '<p><br />Regards,<br /><br />'.$sender_contact->user_first_name.' '.$sender_contact->user_last_name.'<br /><strong id="" class="">'.$from.'</strong><br />'.$sender_contact->role_types.'</p>';
+				$email_contents .= '<img src="https://sojourn.focusshopfit.com.au/uploads/misc/'.$user_signature->banner_name.'" width="788" height="170" alt="Focus Shopfit PTY LTD Signature" />';
 
 
 
 				$subject = 'Contractor Feedback: '.$client->company_name.' - '.$row->project_id.' '.$row->project_name.' - '.$company_contractor_name;
 				$email_msg = '<div style="font-family: verdana,sans-serif; font-size:12px; ">'.$email_contents.'</div>';
 
+
+
+				if($row->set_send_feedback == 1){
+
+					echo $email_msg.'
+
+					';
+
+
+					$this->set_send_email($from,$to,$subject,$email_msg); // done
+				}
+
+
+			//	echo $email_msg;
+
 			//	echo '<pre>';var_dump($works_contractor->ex_gst );echo '</pre>'; 
+
+
+
+			
+
 
 			}
 
 
 
 
-			// $this->set_send_email($from,$to,$subject,$email_msg); // done
+		
 
 
 
