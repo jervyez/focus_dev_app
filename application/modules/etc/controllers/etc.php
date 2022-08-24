@@ -3608,6 +3608,8 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 		$selected_work_contractor_id = $_POST['selected_work_contractor_id'];
 		$con_feedbacks_arr = array();
 
+		$arr_cc = array();
+
 
 
 		$from = '';
@@ -3615,14 +3617,14 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 		$subject = '';
 		$email_msg = '';
 
-		if($user_id == 2 || $user_id == 3){
+		
 
 			$q_email_feedbacks = $this->etc_m->get_email_feedbacks();
 			$email_feedback = array_shift($q_email_feedbacks->result() );
 
 
 			$q_contractors = $this->etc_m->list_group_contractors_per_selected($selected_work_contractor_id);
-
+/*
 			foreach ($q_contractors->result() as $works_contractor){
 				if($selected_work_contractor_id == $works_contractor->works_contrator_id){
 					$selected_price = $works_contractor->ex_gst;
@@ -3633,11 +3635,19 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 			if($selected_price == 0 || !isset($selected_price) ){
 				$selected_price = 1;
 			}
+*/
+
+			$q_best_price = $this->etc_m->get_best_quoted_price($selected_work_contractor_id);
+			$best_price = array_shift($q_best_price->result() );
+			$selected_price = $best_price->ex_gst;
+
+
+
 
 
 			foreach ($q_contractors->result() as $works_contractor){
 
-
+			
 
 				if($selected_work_contractor_id == $works_contractor->works_contrator_id){
 
@@ -3680,6 +3690,12 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 				$work_contractor_q = $this->etc_m->get_work_contractor_details($works_contrator_id);
 				$row = array_shift($work_contractor_q->result() );
 
+				if($row->job_category == 'Maintenance'){
+					return;
+				}
+
+				
+
 				$q_client_details = $this->etc_m->display_company_detail_by_id($row->client_id,$row->is_pending_client);
 				$client = array_shift($q_client_details->result());
 
@@ -3707,6 +3723,22 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 				$q_sender_contact = $this->etc_m->fetch_user($sender_id); // $row->project_manager_id
 				$sender_contact = array_shift($q_sender_contact->result());
 				$from = $sender_contact->general_email;
+
+				if($sender_id != $user_id){
+
+					$q_sender_contact_cc = $this->etc_m->fetch_user($user_id); // $row->project_manager_id
+					$sender_contact_cc = array_shift($q_sender_contact_cc->result());
+					array_push($arr_cc,$sender_contact_cc->general_email);
+
+				}
+
+
+				 
+
+
+
+
+
 
 				$to = $row->general_email;
 
@@ -3753,12 +3785,29 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 				}
 
 
-				$email_contents = str_replace('<works_desc>',$work_job_name,$fb_email_message);
-				$email_contents = str_replace('<client_name>',$client->company_name,$email_contents);
-				$email_contents = str_replace('<tendered_amount>',$row->ex_gst,$email_contents);
+				$email_contents = str_replace('<works_desc>',  '<span style="font-weight:bold;">'.$work_job_name.'</span>'   ,$fb_email_message);
+				$email_contents = str_replace('<client_name>',''.$client->company_name.'',$email_contents);
+
+				$tendered_amount = number_format($row->ex_gst,2);
+
+
+				$email_contents = str_replace('<tendered_amount>',''.$tendered_amount.'',$email_contents);
 				$email_contents = str_replace('<contractor_name>',$company_contractor_name,$email_contents);
 				$email_contents = str_replace('<feedback>',$con_fb_message,$email_contents);
 				$email_contents = str_replace('<sender_email>',$from,$email_contents);
+
+
+
+				if($row->ex_gst < $selected_price){
+					$email_contents = str_replace('greater','less',$email_contents);
+				}
+
+
+
+				$email_contents = str_replace('<bold_start>','<span style="font-weight:bold;">',$email_contents);
+				$email_contents = str_replace('<bold_end>','</span>',$email_contents);
+
+
 				$email_contents = nl2br($email_contents);
 
 
@@ -3769,7 +3818,7 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 
 
 
-				$email_contents .= '<p><br />Regards,<br /><br />'.$sender_contact->user_first_name.' '.$sender_contact->user_last_name.'<br /><strong id="" class="">'.$from.'</strong><br />'.$sender_contact->role_types.'</p>';
+				$email_contents .= '<p title="'.$works_contrator_id.'"><br />Regards,<br /><br />'.$sender_contact->user_first_name.' '.$sender_contact->user_last_name.'<br /><strong id="" class="">'.$from.'</strong><br />'.$sender_contact->role_types.'</p>';
 				$email_contents .= '<img src="https://sojourn.focusshopfit.com.au/uploads/misc/'.$user_signature->banner_name.'" width="788" height="170" alt="Focus Shopfit PTY LTD Signature" />';
 
 
@@ -3777,17 +3826,28 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 				$subject = 'Contractor Feedback: '.$client->company_name.' - '.$row->project_id.' '.$row->project_name.' - '.$company_contractor_name;
 				$email_msg = '<div style="font-family: verdana,sans-serif; font-size:12px; ">'.$email_contents.'</div>';
 
+				if($row->ex_gst > 0    ){
+
+					if($row->set_send_feedback == 1){
+
+						$date_today = date('d/m/Y');
+
+						$this->etc_m->update_sent_feedback($date_today,$works_contrator_id);
+
+					// echo $email_msg.'  ';
+
+						if($user_id == 2){
+							$this->set_send_email($from,$to,$subject,$email_msg,$arr_cc); // done
+
+						//	echo '<pre>';var_dump($from,$to,$arr_cc );echo '</pre>'; 
+						}
+
+					}
 
 
-				if($row->set_send_feedback == 1){
-
-					echo $email_msg.'
-
-					';
-
-
-					$this->set_send_email($from,$to,$subject,$email_msg); // done
 				}
+
+	
 
 
 			//	echo $email_msg;
@@ -3806,9 +3866,6 @@ $file_name =  str_replace( array( "'",  '"', ',', '"' , '`'  ,'%' ,  '&apos', ' 
 
 		
 
-
-
-		}
 
 
 

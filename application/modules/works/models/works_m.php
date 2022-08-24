@@ -162,14 +162,14 @@ class Works_m extends CI_Model{
 		return $query;
 	}
 
-	public function insert_works_contractor($works_id,$date_added,$company_id,$contact_person_id){
+	public function insert_works_contractor($works_id,$date_added,$company_id,$contact_person_id,$set_feedback){
 
 		$query = $this->db->query("SELECT * from work_contractors where works_id = '$works_id' and company_id = '$company_id'");
 		
 		// if($query->num_rows == 0){
 
-			$this->db->query("INSERT INTO `work_contractors` (`works_id`, `date_added`, `company_id`, `contact_person_id`) 
-				VALUES ('$works_id', '$date_added', '$company_id', '$contact_person_id')");
+			$this->db->query("INSERT INTO `work_contractors` (`works_id`, `date_added`, `company_id`, `contact_person_id`,`set_send_feedback`) 
+				VALUES ('$works_id', '$date_added', '$company_id', '$contact_person_id', '$set_feedback')");
 			
 			// $work_id = $this->db->insert_id();
 			// return $work_id;
@@ -184,8 +184,8 @@ class Works_m extends CI_Model{
 		}
 	}
 
-	public function update_works_contractor_details($work_contractor_id,$works_id,$date_added,$company_id,$contact_person_id,$work_is_selected){//,){
-		$this->db->query("UPDATE `work_contractors` set `date_added` = '$date_added', `company_id` = '$company_id', `contact_person_id` = '$contact_person_id' where works_contrator_id = '$work_contractor_id'");//, `ex_gst` = '$ex_gst',`inc_gst` = '$inc_gst' where works_contrator_id = '$work_contractor_id'");
+	public function update_works_contractor_details($work_contractor_id,$works_id,$date_added,$company_id,$contact_person_id,$work_is_selected,$set_send_feedback){//,){
+		$this->db->query("UPDATE `work_contractors` set `date_added` = '$date_added', `company_id` = '$company_id', `set_send_feedback` = '$set_send_feedback', `contact_person_id` = '$contact_person_id' where works_contrator_id = '$work_contractor_id'");//, `ex_gst` = '$ex_gst',`inc_gst` = '$inc_gst' where works_contrator_id = '$work_contractor_id'");
 		if($work_is_selected == 1){
 			$this->db->query("UPDATE `works` set `company_client_id` = '$company_id' where works_id = '$works_id' ");
 		}

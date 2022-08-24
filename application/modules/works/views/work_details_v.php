@@ -116,7 +116,7 @@
 													</select>
 													<script>$("#other_work_category").val("");</script>
 													<br>
-													<input type="text" id = "other_work_description" tabindex="6" name = "other_work_description" onblur = "blur_other_desc()" class = "form-control" style = "display: none" placeholder = "Type Work Description here..111">
+													<input type="text" id = "other_work_description" tabindex="6" name = "other_work_description" onblur = "blur_other_desc()" class = "form-control" style = "display: none" placeholder = "Type Work Description here..">
 													<script>
 														window.blur_other_desc = function(){
 															var cat = $("#other_work_category").val();
@@ -135,7 +135,7 @@
 														<?php $this->works->work_list_on_wip($this->uri->segment(3)); ?>
 													</select>
 
-													<input type="text" id = "other_work_description" tabindex="6" name = "other_work_description" class = "form-control" style = "display: none" placeholder = "Type Work Description here..222">
+													<input type="text" id = "other_work_description" tabindex="6" name = "other_work_description" class = "form-control" style = "display: none" placeholder = "Type Work Description here..">
 												</div>
 												<?php endif; ?>
 											<?php else: ?>
@@ -151,7 +151,7 @@
 												</select>
 												<script>$("#other_work_category").val("");</script>
 												<br>
-												<input type="text" id = "other_work_description" tabindex="6" name = "other_work_description" onblur = "blur_other_desc()" class = "form-control" style = "display: none" placeholder = "Type Work Description here..333">
+												<input type="text" id = "other_work_description" tabindex="6" name = "other_work_description" onblur = "blur_other_desc()" class = "form-control" style = "display: none" placeholder = "Type Work Description here..">
 												<script>
 													window.blur_other_desc = function(){
 														var cat = $("#other_work_category").val();

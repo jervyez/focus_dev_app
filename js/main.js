@@ -2739,7 +2739,9 @@ $('.work_contractor_click').click(function () {
     selected_work_contractor_id = 0;
     work_joinery_id = 0;
     joinery_work_id = 0;
-    //var proj_id = get_project_id();
+   //var proj_id = get_project_id();    
+
+     var proj_id = $('#hidden_proj_id').val();
     
  
       $.post(baseurl+"works/display_var_work_contractor", 
@@ -4656,7 +4658,9 @@ $('.work_contractor_click').click(function () {
       var is_reconciled = output[6];
       var cont_person_id = output[7];
       var contractor_notes = output[8];
+      var set_send_feedback = output[9];
       $("#contractor_notes").val(contractor_notes);
+      $(".select_receive_feedback").val(set_send_feedback);
 
       if(is_reconciled == 1){
         $("#delete_contractor").hide();
@@ -4716,6 +4720,15 @@ $('.work_contractor_click').click(function () {
       work_is_selected = output[5];
       var contractor_notes = output[8];
       $("#var_contractor_notes").val(contractor_notes);
+
+      var cont_person_id = output[7]; 
+      var set_send_feedback = output[9];
+      $(".select_receive_feedback").val(set_send_feedback);
+
+
+
+
+
       
       $("#contractor_date_entered").val(date_entered);
       $("#var_work_contructor_name").val(contractor_name);
@@ -4760,6 +4773,7 @@ $('.work_contractor_click').click(function () {
 
     var date_entered = $("#contractor_date_entered").val();
     var result = $("#work_contructor_name").val();
+    var select_receive_feedback = $('.select_receive_feedback').val();
     var comp_id = result.split("|");
    
     comp_id = comp_id[1];
@@ -4789,7 +4803,8 @@ $('.work_contractor_click').click(function () {
             date_added: date_entered,
             comp_id: comp_id,
             contact_person_id: contact_person_id,
-            work_is_selected: work_is_selected
+            work_is_selected: work_is_selected,
+            select_receive_feedback: select_receive_feedback
             // inc_gst: inc_gst,
             // ex_gst: ex_gst
           }, 
@@ -4821,7 +4836,8 @@ $('.work_contractor_click').click(function () {
             date_added: date_entered,
             comp_id: comp_id,
             contact_person_id: contact_person_id,
-            work_is_selected: work_is_selected
+            work_is_selected: work_is_selected,
+            select_receive_feedback: select_receive_feedback
             // inc_gst: inc_gst,
             // ex_gst: ex_gst
           }, 
@@ -4862,6 +4878,8 @@ $('.work_contractor_click').click(function () {
     var date_entered = $("#contractor_date_entered").val();
     var result = $("#var_work_contructor_name").val();
     var comp_id = result.split("|");
+    var select_receive_feedback = $('#select_receive_feedback_vr').val();
+
    
     comp_id = comp_id[1];
     var  contact_person_id= $(".var_cont_person").val();
@@ -4882,7 +4900,8 @@ $('.work_contractor_click').click(function () {
         date_added: date_entered,
         comp_id: comp_id,
         contact_person_id: contact_person_id,
-        work_is_selected: work_is_selected
+        work_is_selected: work_is_selected,
+        select_receive_feedback: select_receive_feedback
         // inc_gst: inc_gst,
         // ex_gst: ex_gst
       }, 
@@ -4913,7 +4932,8 @@ $('.work_contractor_click').click(function () {
         date_added: date_entered,
         comp_id: comp_id,
         contact_person_id: contact_person_id,
-        work_is_selected: work_is_selected
+        work_is_selected: work_is_selected,
+        select_receive_feedback: select_receive_feedback
         // inc_gst: inc_gst,
         // ex_gst: ex_gst
       }, 
@@ -5013,13 +5033,13 @@ $('.work_contractor_click').click(function () {
 
 
 
+
     // confirm contractor selection added by Jervyv//
     const user_set_id = $('.user_account_link_fc').attr('id');
     const user_id_arr = user_set_id.split('_');
     const user_id_set = user_id_arr[1];
 
-
-    if(user_id_set == 2){
+    if(user_id_set ==2 || user_id_set == 3){
 
       const e = window.event;
       //console.log('test: '+e);
@@ -5038,7 +5058,13 @@ $('.work_contractor_click').click(function () {
 
     }
     // confirm contractor selection added by Jervy
-    
+
+
+
+
+
+
+
     $.post(baseurl+"works/is_joinery", 
     { 
       work_id: work_id,
@@ -5322,13 +5348,12 @@ $('.work_contractor_click').click(function () {
 //  adadeed by Jervy
 
     //console.log('test 123');
-    if(user_id_set == 2){
-      $.post(baseurl+"etc/set_email_notif",{ 
-        selected_work_contractor_id: selected_work_contractor_id
-      },function(result){
-        console.log(result);
-      });
-    }
+
+    $.post(baseurl+"etc/set_email_notif",{ 
+      selected_work_contractor_id: selected_work_contractor_id
+    },function(result){
+      console.log(result);
+    });
 
 //  adadeed by Jervy
 
@@ -5338,10 +5363,43 @@ $('.work_contractor_click').click(function () {
   window.sel_var_work_con = function(a){
 
     selected_work_contractor_id = a;
+
     var exprice = $(".work-set-exgst-"+selected_work_contractor_id).val();
     var comp_name_work = $('tr.cont-'+selected_work_contractor_id).find('.item-cont-'+selected_work_contractor_id+'-comp a').text();
 
     var var_acceptance_date = $("#variation_acceptance_date").val();
+
+
+
+
+    // confirm contractor selection added by Jervyv//
+    const user_set_id = $('.user_account_link_fc').attr('id');
+    const user_id_arr = user_set_id.split('_');
+    const user_id_set = user_id_arr[1];
+
+    if(user_id_set == 2 || user_id_set == 3){
+
+      const e = window.event;
+      //console.log('test: '+e);
+      const elemTarget = e.target;
+      //console.log('test: '+elemTarget);
+
+      e.preventDefault();
+      elemTarget.checked = false;
+
+      //console.log(e.target);
+      if (!confirm("Confirm selected contractor?")) {
+        return;  
+      } else {
+        elemTarget.checked = true;
+      }
+
+    }
+    // confirm contractor selection added by Jervy
+
+
+
+
     $.post(baseurl+"works/is_joinery", 
     { 
       work_id: work_id,
@@ -5621,6 +5679,23 @@ $('.work_contractor_click').click(function () {
       }
 
     });
+
+
+//  adadeed by Jervy
+
+    //console.log('test 123');
+
+    $.post(baseurl+"etc/set_email_notif",{ 
+      selected_work_contractor_id: selected_work_contractor_id
+    },function(result){
+      console.log(result);
+    });
+
+//  adadeed by Jervy
+
+
+
+
   }  
   /*$("#set_work_joinery_contractor_yes").click(function(){
     var exprice = $(".work-set-exgst-"+selected_work_contractor_id).val();

@@ -106,7 +106,7 @@
 		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 		        <h4 class="modal-title">Company Details</h4>
 	        </div>
-	        <div class="modal-body" style = "height: 180px">
+	        <div class="modal-body" style = "height: 230px">
 	        	<div class="col-sm-12 m-bottom-10 clearfix <?php if(form_error('officeNumber')){ echo 'has-error has-feedback';} ?>">
 					<label for="company_prg" class="col-sm-3 control-label">Date*</label>
 					<div class="col-sm-9">														
@@ -157,6 +157,20 @@
 						<input type="text" title = "Notes are limited to 40 Characters" class = "form-control input-sm" name = "var_contractor_notes" id = "var_contractor_notes" maxlength="40">
 					</div>
 				</div>
+
+
+				<div class="col-sm-12 m-bottom-10 clearfix" id = "">
+					<label for="receive_feedback" class="col-md-3 col-sm-5 control-label">Receive Feedback</label>
+					<div class="col-md-9 col-sm-7">
+						<select class="form-control select_receive_feedback" id="select_receive_feedback_vr" >
+							<option value="1">Yes</option>
+							<option value="0">No</option>
+						</select>
+					</div>
+				</div>
+
+
+
 	        </div>
 	        <div class="modal-footer">
 	        	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -652,27 +666,53 @@
 		});
     });
 
+
+    function set_chk_work_contractors(elem,check_box_val){
+
+    	if ( elem.checked ) {
+    		$("#set_feedback_"+check_box_val).prop('checked', true);
+    	} else {
+    		$("#set_feedback_"+check_box_val).prop('checked', false);
+    	}
+
+
+    }
+
 	$("#add_selected_con_sup_var").click(function(){
 
 		$("#add_selected_con_sup_var").hide();
         $("#fltr_cont_saving_button_var").show();
 		var checkboxValues = [];
 		var date_entered = $("#add_contractor_date_entered_var").val();
+
+
   		$('input[name=chk_work_contractors]:checked').map(function() {
 
   			var comp_id = $(this).val();
     		// checkboxValues.push($(this).val());
     		var id_name = comp_id+"_cont_person";
     		var contact_person_id = $("#"+id_name).val();
-    	
+
+    		if ( document.getElementById("set_feedback_"+comp_id).checked ) {
+    			var set_send_feedback = 1;
+    		} else {
+    			var set_send_feedback = 0;
+    		}
+
+
+
+    		var work_id = $('#var_cont_cpono').text();
+
+
 
 			$.post(baseurl+"works/insert_contractor", 
           	{ 
-            	proj_id: proj_id,
+            	proj_id: <?php 	echo $projid ?>,
             	work_id: work_id,
             	date_added: date_entered,
             	comp_id: comp_id,
-            	contact_person_id: contact_person_id
+            	contact_person_id: contact_person_id,
+            	set_send_feedback: set_send_feedback
           	}, 
           	function(result){
             	setTimeout(function(){
@@ -695,9 +735,16 @@
             	}, 5000);  // on 5 second
           	});
 
+
+
+
+
+
   		});
 
-	})
+
+
+	});
 
 	var variation_id = "<?php echo $variation_id ?>";
 

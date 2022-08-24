@@ -94,6 +94,7 @@ $(document).ready(function(){
 				break;
 		}
 	}elseif($work_estimated_total > 0){
+		
 		if(isset($_GET['curr_tab'])){
 			$url_curr_tab = $_GET['curr_tab'];
 			switch($url_curr_tab){
@@ -113,6 +114,7 @@ $(document).ready(function(){
 							var proj_id = '<?php echo $project_id ?>';
 							var stateObj = { foo: "bar" };
 							if(variation_id == ''){
+								console.log("No Variation ID");
 								window.history.pushState(stateObj, "", proj_id);
 								setTimeout(function(){
 									$("#add_new_var").removeAttr('disabled');
@@ -156,7 +158,9 @@ $(document).ready(function(){
 								    });
 							    },800);
 							}else{
-								window.history.pushState(stateObj, "", variation_id);
+								console.log(proj_id);
+								window.history.pushState("","",proj_id)
+								//window.history.pushState(stateObj, "", variation_id);
 							}
 							
 						</script>
@@ -1098,7 +1102,7 @@ $("#site_finish").on("dp.change", function (e) {
 																		</p>
 																		<p class="clearfix">
 																			<span class="text-left">Category:</span>
-																			<span class="text-right  pull-right"><strong><?php echo $job_category; ?></strong></span>
+																			<span class="text-right  pull-right"><strong class="prj_job_category_text" ><?php echo $job_category; ?></strong></span>
 																		</p>
 																		<p class="clearfix">
 																			<span class="text-left">Site Start:</span>

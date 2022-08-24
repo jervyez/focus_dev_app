@@ -5577,6 +5577,7 @@ class Works extends MY_Controller{
 			$inc_gst = $row['inc_gst'];
 			$is_selected = $row['is_selected'];
 			$contractor_notes = $row['contractor_notes'];
+			$set_send_feedback = $row['set_send_feedback'];
 
 		}
 
@@ -5585,7 +5586,7 @@ class Works extends MY_Controller{
 			$is_reconciled = $row['is_reconciled'];
 		}
 
-		echo $date_added."|".ucwords(strtolower($company_name))."|".$company_id."|".$ex_gst."|".$inc_gst."|".$is_selected."|".$is_reconciled."|".$contact_person_id."|".$contractor_notes;
+		echo $date_added."|".ucwords(strtolower($company_name))."|".$company_id."|".$ex_gst."|".$inc_gst."|".$is_selected."|".$is_reconciled."|".$contact_person_id."|".$contractor_notes."|".$set_send_feedback;
 
 	}
 	function job_date_entered(){
@@ -5653,10 +5654,13 @@ class Works extends MY_Controller{
 		}
 		$data['job_date'] = "";
 		$proj_id = $_POST['proj_id'];
+
+
 		$proj_q = $this->projects_m->select_particular_project($proj_id);
 		foreach ($proj_q->result_array() as $row){
 			$data['job_date'] = $row['job_date'];
 		}
+
 
 		$works_contructors_t = $this->works_m->display_work_contructor($work_id);
 		$num_rows = $works_contructors_t->num_rows;
@@ -5671,7 +5675,10 @@ class Works extends MY_Controller{
 	    $date_added = $_POST['date_added'];
 	    $comp_id = $_POST['comp_id'];
 	    $contact_person_id = $_POST['contact_person_id'];
-		$works_cont_t = $this->works_m->insert_works_contractor($work_id,$date_added,$comp_id,$contact_person_id);
+	    $set_send_feedback = $_POST['set_send_feedback'];
+
+	    
+		$works_cont_t = $this->works_m->insert_works_contractor($work_id,$date_added,$comp_id,$contact_person_id,$set_send_feedback);
 	    $works_t = $this->works_m->display_works_selected($work_id);
 		foreach ($works_t->result_array() as $row){
 			$cont_type = $row['contractor_type'];
@@ -5708,7 +5715,8 @@ class Works extends MY_Controller{
 	    $date_added = $_POST['date_added'];
 	    $comp_id = $_POST['comp_id'];
 	    $contact_person_id = $_POST['contact_person_id'];
-		$works_cont_t = $this->works_m->insert_works_contractor($work_id,$date_added,$comp_id,$contact_person_id);
+	    $set_send_feedback = $_POST['set_send_feedback'];
+		$works_cont_t = $this->works_m->insert_works_contractor($work_id,$date_added,$comp_id,$contact_person_id,$set_send_feedback);
 	    $works_t = $this->works_m->display_works_selected($work_id);
 		foreach ($works_t->result_array() as $row){
 			$cont_type = $row['contractor_type'];
@@ -5747,9 +5755,11 @@ class Works extends MY_Controller{
 	    $date_added = $_POST['date_added'];
 	    $comp_id = $_POST['comp_id'];
 	    $contact_person_id = $_POST['contact_person_id'];
+	    $select_receive_feedback = $_POST['select_receive_feedback'];
+	    
 	    // $inc_gst = $_POST['inc_gst'];
 	    // $ex_gst = $_POST['ex_gst'];
-		$works_cont_t = $this->works_m->update_works_contractor_details($work_contractor_id,$work_id,$date_added,$comp_id,$contact_person_id,$work_is_selected);//,$ex_gst,$inc_gst);
+		$works_cont_t = $this->works_m->update_works_contractor_details($work_contractor_id,$work_id,$date_added,$comp_id,$contact_person_id,$work_is_selected,$select_receive_feedback);//,$ex_gst,$inc_gst);
 
 	    $works_t = $this->works_m->display_works_selected($work_id);
 		foreach ($works_t->result_array() as $row){
@@ -5787,9 +5797,11 @@ class Works extends MY_Controller{
 	    $date_added = $_POST['date_added'];
 	    $comp_id = $_POST['comp_id'];
 	    $contact_person_id = $_POST['contact_person_id'];
+	    $select_receive_feedback = $_POST['select_receive_feedback'];
 	    // $inc_gst = $_POST['inc_gst'];
 	    // $ex_gst = $_POST['ex_gst'];
-		$works_cont_t = $this->works_m->update_works_contractor_details($work_contractor_id,$work_id,$date_added,$comp_id,$contact_person_id,$work_is_selected);//,$ex_gst,$inc_gst);
+		$works_cont_t = $this->works_m->update_works_contractor_details($work_contractor_id,$work_id,$date_added,$comp_id,$contact_person_id,$work_is_selected,$select_receive_feedback);//,$ex_gst,$inc_gst);
+
 
 	    $works_t = $this->works_m->display_works_selected($work_id);
 		foreach ($works_t->result_array() as $row){
@@ -6861,6 +6873,7 @@ class Works extends MY_Controller{
 		echo '<th>Post Code</th>';
 		echo '<th>Suburb</th>';
 		echo '<th>State</th>';
+		echo '<th class=""><i class="fa fa-envelope-open" aria-hidden="true"></i></th>';
 		echo '</tr>';
 		$company_num = 0;
 		foreach ($con_sup_list_q->result() as $row){
@@ -6941,7 +6954,7 @@ class Works extends MY_Controller{
 
 		foreach ($result as $row) {
 			echo '<tr>';
-				echo '<td><input type="checkbox" value = '.$row['company_id'].' name = "chk_work_contractors"></td>';
+				echo '<td><input type="checkbox" value = '.$row['company_id'].' name = "chk_work_contractors" onclick="set_chk_work_contractors(this,'.$row['company_id'].')"></td>';
 				echo '<td>'.ucwords(strtolower($row['company_name'])).'</td>';
 				$contractors_contacts = $this->company_m->fetch_contact_person_company($row['company_id']);
 				echo '<td>';
@@ -6959,7 +6972,7 @@ class Works extends MY_Controller{
 				echo '<td>'.$row['postcode'].'</td>';
 				echo '<td>'.$row['suburb'].'</td>';
 				echo '<td>'.$row['name'].'</td>';
-						//echo '<td>'..'</td>'
+				echo '<td class=""><input type="checkbox" id="set_feedback_'.$row['company_id'].'" ></td>';
 			echo '</tr>';
 		}
 
@@ -6981,10 +6994,11 @@ class Works extends MY_Controller{
 		echo '<th>Post Code</th>';
 		echo '<th>Suburb</th>';
 		echo '<th>State</th>';
+		echo '<th class=""><i class="fa fa-envelope-open" aria-hidden="true"></i></th>';
 		echo '</tr>';
 		foreach ($contractors_list->result() as $row){
 			echo '<tr>';
-				echo '<td><input type="checkbox" value = '.$row->company_id.' name = "chk_work_contractors"></td>';
+				echo '<td><input type="checkbox" value = '.$row->company_id.' name="chk_work_contractors" onclick="set_chk_work_contractors(this,'.$row->company_id.')"></td>';
 				echo '<td>'.ucwords(strtolower($row->company_name)).'</td>';
 				$contractors_contacts = $this->company_m->fetch_contact_person_company($row->company_id);
 				echo '<td>';
@@ -7001,6 +7015,7 @@ class Works extends MY_Controller{
 				echo '<td>'.$row->postcode.'</td>';
 				echo '<td>'.$row->suburb.'</td>';
 				echo '<td>'.$row->name.'</td>';
+				echo '<td class=""><input type="checkbox" id="set_feedback_'.$row->company_id.'"  ></td>';
 					
 			echo '</tr>';
 		}
@@ -7037,10 +7052,11 @@ class Works extends MY_Controller{
 		echo '<th>Post Code</th>';
 		echo '<th>Suburb</th>';
 		echo '<th>State</th>';
+		echo '<th class=""><i class="fa fa-envelope-open" aria-hidden="true"></i></th>';
 		echo '</tr>';
 		foreach ($contractors_list->result() as $row){
 			echo '<tr>';
-				echo '<td><input type="checkbox" value = '.$row->company_id.' name = "chk_work_contractors"></td>';
+				echo '<td><input type="checkbox" value = '.$row->company_id.' name = "chk_work_contractors" onclick="set_chk_work_contractors(this,'.$row->company_id.')"></td>';
 				echo '<td>'.ucwords(strtolower($row->company_name)).'</td>';
 				$contractors_contacts = $this->company_m->fetch_contact_person_company($row->company_id);
 				echo '<td>';
@@ -7057,6 +7073,7 @@ class Works extends MY_Controller{
 				echo '<td>'.$row->postcode.'</td>';
 				echo '<td>'.$row->suburb.'</td>';
 				echo '<td>'.$row->name.'</td>';
+				echo '<td class=""><input type="checkbox" id="set_feedback_'.$row->company_id.'" ></td>';
 					
 			echo '</tr>';
 		}

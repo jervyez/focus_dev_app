@@ -1,9 +1,9 @@
 <table class="table table-striped table-bordered" style = "font-size: 11px">
 	<thead>
 		<tr>
-			<th>Requested Quotes</th>
-			<th>Price ex GST</th>
-			<th>Inc GST</th>
+			<th width="60%">Requested Quotes</th>
+			<th width="20%">Ex GST</th>
+			<th width="20%">Inc GST</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -156,24 +156,35 @@
 						<?php if($job_date !== ""): ?>
 							<?php if($is_variation == 0): ?>
 								<?php if($is_reconciled == 0): ?>
-									<input type="radio" id = "selcomp" name = "selcomp" value = "<?php echo $row['works_contrator_id'] ?>" <?php if($is_selected == 1){ ?>checked="checked"<?php } ?> onClick = "sel_work_con(<?php echo $row['works_contrator_id'] ?>)" >
+									<input type="radio" id = "" class="rad_sel_work_con" name = "selcomp" value = "<?php echo $row['works_contrator_id'] ?>" <?php if($is_selected == 1){ ?>checked="checked"<?php } ?> onClick = "sel_work_con(<?php echo $row['works_contrator_id'] ?>)" >
 								<?php endif; ?>
 							<?php else:
 								if($acceptance_date !== ""): ?>
-								 	<input type="radio" id = "selcomp" name = "selcomp" value = "<?php echo $row['works_contrator_id'] ?>" <?php if($is_selected == 1){ ?>checked="checked"<?php } ?> onClick = "sel_work_con(<?php echo $row['works_contrator_id'] ?>)" >
+								 	<input type="radio" id = "" class="rad_sel_work_con" name = "selcomp" value = "<?php echo $row['works_contrator_id'] ?>" <?php if($is_selected == 1){ ?>checked="checked"<?php } ?> onClick = "sel_work_con(<?php echo $row['works_contrator_id'] ?>)" >
 								<?php endif; ?>
 							<?php endif; ?>
 						<?php endif; ?>
 					<?php endif; ?>
 					<?php if($row['cs_is_pending'] == 0): ?>
-					<a href="#" class="tooltip-enabled xxx"  data-html="true" data-original-title = "<?php echo $contact_name.' '.$contact_no.'<br />'.$genEmail.''.$mobile_comp_no; ?>" data-placement="left" <?php if($is_variation == 0){ ?>onClick = "selcontractor(<?php echo $row['works_contrator_id'] ?>)" data-toggle="modal" data-target="#addContractor_Modal"<?php }else{ ?> onClick = "sel_var_contractor(<?php echo $row['works_contrator_id'] ?>)" data-toggle="modal" data-target="#add_var_Contractor_Modal"<?php }?> id = "work_contractor_name" style = "color: <?php echo $font_color ?>"><?php echo $row['comp_name'] ?></a>
+					<a href="#" style="vertical-align: text-bottom;" class="tooltip-enabled xxx"  data-html="true" data-original-title = "<?php echo $contact_name.' '.$contact_no.'<br />'.$genEmail.''.$mobile_comp_no; ?>" data-placement="left" <?php if($is_variation == 0){ ?>onClick = "selcontractor(<?php echo $row['works_contrator_id'] ?>)" data-toggle="modal" data-target="#addContractor_Modal"<?php }else{ ?> onClick = "sel_var_contractor(<?php echo $row['works_contrator_id'] ?>)" data-toggle="modal" data-target="#add_var_Contractor_Modal"<?php }?> id = "work_contractor_name" style = "color: <?php echo $font_color ?>"><?php echo $row['comp_name'] ?></a>
 					<?php else: ?>
-					<a href="#" onClick = "select_contractor(<?php echo $row['works_contrator_id'] ?>,<?php echo $row['company_id'] ?>)" data-toggle="modal" data-target="#frm_pending_cont_sup_update" id = "work_contractor_name" style = "color: #FC8114"><?php echo $row['comp_name'] ?></a>
+					<a href="#" style="vertical-align: text-bottom;" onClick = "select_contractor(<?php echo $row['works_contrator_id'] ?>,<?php echo $row['company_id'] ?>)" data-toggle="modal" data-target="#frm_pending_cont_sup_update" id = "work_contractor_name" style = "color: #FC8114"><?php echo $row['comp_name'] ?></a>
 					<?php endif; ?>
 					
 					<?php if($row['contractor_notes'] !== ""): ?>
 					<span class="tooltip-enabled badge alert-success pointer pull-right tooltip-enabled" data-original-title = "<?php echo $row['contractor_notes'] ?>"><i class="fa fa-pencil-square-o"></i></span>
 					<?php endif; ?>
+
+					<?php if($row['set_send_feedback'] == 1): ?>
+
+						<span class="pull-right tooltip-enabled" title="" data-html="true" data-original-title="Receive Contractor Feedback" data-placement="right"  style="color: #419641;"><i class="fa fa-envelope" aria-hidden="true"></i></span>
+
+					<?php endif; ?>
+
+
+
+
+
 				</td>
 
 				<?php $quote_value = ''; $quote_value_wgst = ''; ?>
@@ -224,5 +235,6 @@
 		?>
 	</tbody>
 </table>
+
 
 <script>$('.tooltip-enabled').tooltip();</script>

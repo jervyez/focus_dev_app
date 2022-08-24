@@ -1,9 +1,9 @@
 <table class="table table-striped table-bordered" style = "font-size: 11px">
 	<thead>
 		<tr>
-			<th>Requested Quotes</th>
-			<th>Price ex GST</th>
-			<th>Inc GST</th>
+			<th width="60%">Requested Quotes</th>
+			<th width="20%">Ex GST</th>
+			<th width="20%">Inc GST</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -51,16 +51,34 @@
 			?>
 			<tr class="cont-<?php echo $row['works_contrator_id']; ?>" <?php if($is_selected == 1){ ?>style = "color: #CC6666"<?php } ?>>
 				<td class="item-cont-<?php echo $row['works_contrator_id']; ?>-comp">
-					<?php if($job_date !== ""): ?>
-						<?php if($acceptance_date !== ""): ?>
+
+
+					<?php if($job_date != ""): ?>
+						<?php if( isset(  $acceptance_date ) ): ?>
 							<input type="radio" id = "selcomp" name = "selcomp" value = "<?php echo $row['works_contrator_id'] ?>" <?php if($is_selected == 1){ ?>checked="checked"<?php } ?> onClick = "sel_var_work_con(<?php echo $row['works_contrator_id'] ?>)" >
 						<?php endif; ?>
 					<?php endif; ?>
+
+					 
+
+
+
+
 					<a href="#" title = "<?php echo $contact_name.'  ('.$contact_no.')' ?>" <?php if($is_variation == 0){ ?>onClick = "selcontractor(<?php echo $row['works_contrator_id'] ?>)" data-toggle="modal" data-target="#addContractor_Modal"<?php }else{ ?> onClick = "sel_var_contractor(<?php echo $row['works_contrator_id'] ?>)" data-toggle="modal" data-target="#add_var_Contractor_Modal"<?php }?>><?php echo $row['comp_name'] ?></a>
 					
 					<?php if($row['contractor_notes'] !== ""): ?>
 					<span class="badge alert-success pointer pull-right tooltip-enabled" title = "<?php echo $row['contractor_notes'] ?>"><i class="fa fa-pencil-square-o"></i></span>
 					<?php endif; ?>
+
+
+
+					<?php if($row['set_send_feedback'] == 1): ?>
+
+						<span class="pull-right tooltip-enabled" title="" data-html="true" data-original-title="Receive Contractor Feedback" data-placement="right"  style="color: #419641;"><i class="fa fa-envelope" aria-hidden="true"></i></span>
+
+					<?php endif; ?>
+
+					
 				</td>
 				<td class="item-cont-<?php echo $row['works_contrator_id']; ?>-exprce" align = right>
 					<input type="text" onclick = "this.select()" onkeyup = "ku_update_exgst(<?php echo $row['works_contrator_id']; ?>)" onblur = "update_exgst(<?php echo $row['works_contrator_id']; ?>)" class="work-set-exgst-<?php echo $row['works_contrator_id']; ?> input_text text-right number_format price" value = "<?php echo number_format($row['ex_gst'],2) ?>" style = "width: 100%">

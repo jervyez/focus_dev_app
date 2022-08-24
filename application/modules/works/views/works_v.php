@@ -187,7 +187,7 @@
 		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 		        <h4 class="modal-title">Company Details</h4>
 	        </div>
-	        <div class="modal-body" style = "height: 180px">
+	        <div class="modal-body" style = "height:230px">
 	        	<div class="col-sm-12 m-bottom-10 clearfix <?php if(form_error('officeNumber')){ echo 'has-error has-feedback';} ?>">
 					<label for="company_prg" class="col-sm-3 control-label">Date*</label>
 					<div class="col-sm-9">														
@@ -236,6 +236,16 @@
 					<label for="contact_person" class="col-md-3 col-sm-5 control-label">Notes: </label>
 					<div class="col-md-9 col-sm-7 here">
 						<input type="text" title = "Notes are limited to 40 Characters" class = "form-control input-sm" name = "contractor_notes" id = "contractor_notes" maxlength="40">
+					</div>
+				</div>
+				
+				<div class="col-sm-12 m-bottom-10 clearfix" id = "">
+					<label for="receive_feedback" class="col-md-3 col-sm-5 control-label">Receive Feedback</label>
+					<div class="col-md-9 col-sm-7">
+						<select class="form-control select_receive_feedback" >
+							<option value="1">Yes</option>
+							<option value="0">No</option>
+						</select>
 					</div>
 				</div>
 
@@ -1103,17 +1113,39 @@
 		});
     });
 
+    function set_chk_work_contractors(elem,check_box_val){
+
+    	if ( elem.checked ) {
+    		$("#set_feedback_"+check_box_val).prop('checked', true);
+    	} else {
+    		$("#set_feedback_"+check_box_val).prop('checked', false);
+    	}
+
+
+    }
+
 	$("#add_selected_con_sup").click(function(){
+
+
+
 		$("#add_selected_con_sup").hide();
         $("#fltr_cont_saving_button").show();
 		var checkboxValues = [];
 		var date_entered = $("#add_contractor_date_entered").val();
   		$('input[name=chk_work_contractors]:checked').map(function() {
+
   			var comp_id = $(this).val();
     		// checkboxValues.push($(this).val());
     		var id_name = comp_id+"_cont_person";
     		var contact_person_id = $("#"+id_name).val();
-    	
+
+
+    		if ( document.getElementById("set_feedback_"+comp_id).checked ) {
+    			var set_send_feedback = 1;
+    		} else {
+    			var set_send_feedback = 0;
+    		}
+
 
 			$.post(baseurl+"works/insert_contractor", 
           	{ 
@@ -1121,7 +1153,8 @@
             	work_id: work_id,
             	date_added: date_entered,
             	comp_id: comp_id,
-            	contact_person_id: contact_person_id
+            	contact_person_id: contact_person_id,
+            	set_send_feedback: set_send_feedback
           	}, 
           	function(result){
             	setTimeout(function(){

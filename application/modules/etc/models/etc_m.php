@@ -16,7 +16,7 @@ class Etc_m extends CI_Model{
 			`project`.`shop_tenancy_number`,`work_contractors`.`prj_quote_review`,`project`.`shop_name`,`work_contractors`.`contractor_notes`, `works`.`project_id`,`project`.`address_id` ,`project`.`address_id` AS `site_address_id`,`project`.`client_id`,`project`.`project_name`, `contact_number`.`office_number` ,`contact_number`.`mobile_number`,
 			`contact_person`.`first_name`,`contact_person`.`last_name`, `project`.`project_estiamator_id`,`work_contractors`.`company_id`,`work_contractors`.`is_pending`,`company_details`.`company_name`, `company_details`.`address_id`,
 			`email`.`general_email`,`supplier_cat`.`supplier_cat_name`,  `job_sub_category`.`job_sub_cat`,`works`.`contractor_type`,`company_details`.`abn`, `notes`.`comments`,`notes`.`notes`, `considerations`.*, `project`.`project_manager_id`,`project`.`job_category`,
-			UNIX_TIMESTAMP( STR_TO_DATE(`works`.`work_reply_date`, '%d/%m/%Y') ) AS `unix_reply_date`, `works`.`price` ,`work_contractors`.`contractor_reply_conditions`,`work_contractors`.`inc_gst`, `project`.`is_pending_client`,`works`.`other_work_desc`,`project`.`project_admin_id`,
+			UNIX_TIMESTAMP( STR_TO_DATE(`works`.`work_reply_date`, '%d/%m/%Y') ) AS `unix_reply_date`, `works`.`price`,`work_contractors`.`set_send_feedback` ,`work_contractors`.`contractor_reply_conditions`,`work_contractors`.`inc_gst`, `project`.`is_pending_client`,`works`.`other_work_desc`,`project`.`project_admin_id`,
 			`project`.`project_date` 
 			FROM `work_contractors`
 			LEFT JOIN `works` ON `works`.`works_id` = `work_contractors`.`works_id`
@@ -34,8 +34,19 @@ class Etc_m extends CI_Model{
 	}
 
 	public function list_group_contractors_per_selected($works_contrator_id){
-		$query = $this->db->query("SELECT  `work_contractors`.`works_contrator_id`,`work_contractors`.`ex_gst` FROM `work_contractors` WHERE`work_contractors`.`works_id` IN ( SELECT `wc_a`.`works_id` FROM `work_contractors` `wc_a` WHERE `wc_a`.`works_contrator_id` = '$works_contrator_id' ) ORDER BY `work_contractors`.`is_selected` DESC");
+		$query = $this->db->query("SELECT  `work_contractors`.`works_contrator_id`,`work_contractors`.`ex_gst` FROM `work_contractors` WHERE`work_contractors`.`works_id` IN ( SELECT `wc_a`.`works_id` FROM `work_contractors` `wc_a` WHERE `wc_a`.`works_contrator_id` = '$works_contrator_id' ) AND  `work_contractors`.`feedback_date` IS NULL ORDER BY `work_contractors`.`is_selected` DESC");
 		return $query;
+	}
+
+	public function get_best_quoted_price($works_contrator_id){
+		$query = $this->db->query("SELECT `work_contractors`.`works_contrator_id`,`work_contractors`.`ex_gst` FROM `work_contractors` 
+			WHERE`work_contractors`.`works_id` IN ( SELECT `wc_a`.`works_id` FROM `work_contractors` `wc_a` WHERE `wc_a`.`works_contrator_id` = '$works_contrator_id' ) 
+			AND `work_contractors`.`ex_gst` > 0 ORDER BY `work_contractors`.`ex_gst` ASC LIMIT 1");
+		return $query;
+	}
+
+	public function update_sent_feedback($date,$work_contractor_id){
+		$this->db->query("UPDATE `work_contractors` SET `feedback_date` = '$date' WHERE `work_contractors`.`works_contrator_id` = '$work_contractor_id'");
 	}
 
 
@@ -82,6 +93,11 @@ class Etc_m extends CI_Model{
 			AND CAST(`contractor_feedback`.`feedback_start_range` AS DECIMAL(4,2)) = 0
 			AND CAST(`contractor_feedback`.`feedback_end_range` AS DECIMAL(4,2)) = 0
 			AND `contractor_feedback`.`is_prime` = '0' ");
+		return $query;
+	}
+
+	public function get_email_feedbacks(){
+		$query = $this->db->query(" SELECT `selected_contractor_email`,`unsuccessful_contractor_email` FROM `static_defaults` ");
 		return $query;
 	}
 
