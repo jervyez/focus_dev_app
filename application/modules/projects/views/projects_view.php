@@ -1157,6 +1157,11 @@ $("#site_finish").on("dp.change", function (e) {
 																			<span class="text-right  pull-right"><strong><?php echo $project_area; ?> SQM</strong></span>
 																		</p>
 
+																		<p class="clearfix">
+																			<span class="text-left">Send Feedback:</span>
+																			<span class="text-right  pull-right"><strong id="is_prj_send_feedback" class="<?php echo $prj_receive_feedback; ?>"><?php echo ($prj_receive_feedback == 1 ? 'Yes' : 'No'); ?></strong></span>
+																		</p>
+
 																		<hr />
 																		<p class="clearfix">
 																			<span class="text-left">Focus:</span>

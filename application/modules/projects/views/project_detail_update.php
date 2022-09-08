@@ -52,10 +52,14 @@
 	<div class="row">				
 		<?php $this->load->view('assets/sidebar'); ?>
 		<div class="section col-sm-12 col-md-11 col-lg-11">
-			<form class="form-horizontal" role="form" method="post" action="">
-				<input type="hidden" name="pending_comp_id" id="pending_comp_id" value="<?php echo $client_id ?>">
+			
 				<div class="container-fluid">
 					<div class="row">
+
+
+							<form class="form-horizontal" role="form" method="post" action="">
+				<input type="hidden" name="pending_comp_id" id="pending_comp_id" value="<?php echo $client_id ?>">
+
 						<div class="col-md-10">
 							<div class="left-section-box">				
 					
@@ -1026,7 +1030,7 @@
 								
 							</div>
 						</div>
-						
+</form>	
 						<div class="col-md-2">
 							<?php if( $this->session->userdata('is_admin') == 1): ?>
 							<div class="box danger-box delete-project-box clearfix" <?php echo ( $job_date=='' ? '' : 'style="display:none;"' ); ?>>
@@ -1043,12 +1047,32 @@
 								</div>
 							</div>
 							<?php endif; ?>
+
+
+							<?php if($job_category != 'Maintenance'): ?>
+
+								<div class="box m-bottom-15">
+									<div class="box-head pad-5"> 
+										<label class="m-top-10 pad-top-5 pad-left-5">Send Feedback </label>
+										<form method="post" action="<?php echo base_url(); ?>projects/update_feedback" class="clearfix pull-right" style="margin: 0;">
+
+											<input type="submit" value="Set" class="m-left-5 pull-right btn btn-success">
+											<select name="select_receive_feedback" class="form-control input-sx" id="select_receive_feedback" style=" float: right;    width: 80px;    margin: 0;">                      
+												<option value="0">No</option>
+												<option value="1">Yes</option>
+											</select>
+											<input type="hidden" name="project_id" class="project_id " value="<?php echo $project_id; ?>">
+										</form>
+									</div>
+								</div>
+
+							<?php endif; ?>
+
 							
 						</div>
-
 					</div>				
 				</div>
-			</form>			
+				
 			
 		</div>
 	</div>
@@ -1587,4 +1611,8 @@ suburb
 		$('option.pm_comp_option').show();
 	</script>
 <?php endif; ?>
+
+<script type="text/javascript">
+	document.getElementById("select_receive_feedback").value = <?php echo $prj_receive_feedback; ?>;
+</script>
 

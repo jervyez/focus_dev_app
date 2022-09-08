@@ -28,7 +28,7 @@ class Projects_m extends CI_Model{
 	}
 
 	public function select_particular_project($id){
-		$query = $this->db->query("SELECT a.*, b.*, 
+		$query = $this->db->query("SELECT a.*, b.*,  `a`.`receive_feedback` AS `prj_receive_feedback`,
 									c.company_name AS pending_comp_name,
 									concat(c.contact_person_fname,' ',c.contact_person_sname) AS pending_cont_person,
 									c.contact_number AS pending_cont_number,
@@ -408,8 +408,12 @@ ORDER BY  `storage_files`.`client_id`  DESC, `storage_doc_type`.`doc_type_name` 
 		return $query;
 	}
 
+	public function update_feedback($feedback,$project_id){
+		$this->db->query("UPDATE `project` SET `receive_feedback` = '$feedback' WHERE `project`.`project_id` = '$project_id'");
+	}
+
 	public function fetch_complete_project_details($project_id){
-		$query = $this->db->query("SELECT * from `project`
+		$query = $this->db->query("SELECT *, `project`.`receive_feedback` AS `prj_receive_feedback` from `project`
 			LEFT JOIN `contact_person` ON `contact_person`.`contact_person_id` =  `project`.`primary_contact_person_id`
 			LEFT JOIN `users` ON `users`.`user_id` =  `project`.`focus_user_id`
 			LEFT JOIN `notes` ON `notes`.`notes_id` = `project`.`notes_id`

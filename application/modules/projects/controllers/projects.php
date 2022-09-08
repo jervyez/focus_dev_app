@@ -2715,6 +2715,8 @@ $user_id = $this->session->userdata('user_id');
 		$admin_cat = 0;
 		$proj_q = $this->projects_m->fetch_complete_project_details($project_id);
 		foreach ($proj_q->result() as $row) {
+
+
 			$start_date = $row->date_site_commencement;
 			if($row->job_date !== '' && $row->is_paid !== 0){
 				$restricted_cat = 1;
@@ -2783,7 +2785,6 @@ $user_id = $this->session->userdata('user_id');
 				$data['job_date_history'] = $job_date_history['actions'];
 			}
 
-			
 
 			$admin_defaults_raw = $this->admin_m->latest_system_default($data['defaults_id']);
 			$admin_defaults = array_shift($admin_defaults_raw->result_array());
@@ -2799,6 +2800,9 @@ $user_id = $this->session->userdata('user_id');
 			$focus_company = array_shift($q_focus_company->result_array());
 			$data['focus_company_id'] = $focus_company['company_id'];
 			$data['focus_company_name'] = $focus_company['company_name'];
+
+
+
 
 			if($data['is_pending_client'] == 0):
 				$q_client_company = $this->company_m->display_company_detail_by_id($data['client_id']);
@@ -2898,6 +2902,7 @@ $user_id = $this->session->userdata('user_id');
 			$data['unit_number'] = $temp_data['unit_number'];
 			$data['state'] = $temp_data['name'];
 		// $data['address_id'] = $data['address_id'];
+
 
 			$data['shortname'] = $temp_data['shortname'];
 			$data['state_id'] =  $temp_data['state_id'];
@@ -3026,6 +3031,7 @@ $user_id = $this->session->userdata('user_id');
 
 			$data['induction_commencement_date'] = $induction_commencement_date;
 			$data['video_generated'] = $video_generated;
+
 
 			$this->load->view('page', $data);
 		}else{
@@ -3599,6 +3605,8 @@ $timestamp_nxt_revuew_req = (int)strtotime("$day_revew_req next week");
 
 			$inserted_project_id = $this->projects_m->insert_new_project($project_name, $project_date, $contact_person_id, $project_total, $job_date,$brand_name, $is_wip, $client_po, $site_start, $site_finish, $job_category, $job_type, $focus_user_id ,$focus_id, $project_manager_id, $project_admin_id, $project_estiamator_id,$site_address_id, $invoice_address_id, $project_notes_id, $project_markup,$project_status_id, $client_id, $install_hrs, $project_area, $is_double_time, $labour_hrs_estimate, $shop_tenancy_number,$defaults_id,$cc_pm,$date_quote_deadline,$proj_joinery_user,$client_type);
 
+
+
 //=============== Labour Schedule =============
 			
 			$admin_defaults = $this->admin_m->fetch_admin_defaults(1);
@@ -3690,6 +3698,8 @@ $timestamp_nxt_revuew_req = (int)strtotime("$day_revew_req next week");
 				$type = "INSERT";
 				$actions = "Insert project #".$inserted_project_id." site contacts with Contact Person: ".$site_cont_person.", Contact Number: ".$site_cont_number.", Mobile Number: ".$site_cont_mobile.", Email: ".$site_cont_email;
 				$this->user_model->insert_user_log($user_id,$date,$time,$actions,$project_id,$type);
+				$this->projects_m->update_feedback(0,$inserted_project_id);
+
 			endif;
 //================= For Maintenance Site sheet ===============
 
@@ -3769,6 +3779,8 @@ $timestamp_nxt_revuew_req = (int)strtotime("$day_revew_req next week");
 						$sender_user_email = $email_row['general_email'];
 					}
 				}
+
+
 
 				$this->induction_health_safety_m->set_inductions_as_saved($inserted_project_id);
 				$sender_name = $user_name;
@@ -4692,6 +4704,16 @@ if (strncmp($var1, $var2, 5) === 0) {
 		$supplier_category = $this->projects_m->add_project_comment($project_comment[1],$date_posted,$project_comment[2],$project_comment[0],$prj_rev);
 		
 		echo $date_posted;
+	}
+
+	public function update_feedback(){
+
+		$project_id = $_POST['project_id'];
+		$feedback = $_POST['select_receive_feedback'];
+		 
+		$this->projects_m->update_feedback($feedback,$project_id);
+		$type = 'Update';
+		redirect('/projects/view/'.$project_id);
 	}
 
 	public function update_project_details(){
