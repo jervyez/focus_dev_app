@@ -1,13 +1,14 @@
+<?php use App\Modules\Users\Controllers\Users; ?>
+<?php $this->users = new Users(); ?>
+
 <?php 
-	date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts
-	$this->load->module('users');
- 	$this->load->module('bulletin_board'); 
+//	date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts
 
- 	$user_id = $this->uri->segment(3);
- 	$leave_requests = $this->session->userdata('leave_requests');
+ 	$user_id = $this->uri->getSegment(3);
+ 	$leave_requests = $this->session->get('leave_requests');
 
- 	if ($user_id != $this->session->userdata('user_id')) {
-		redirect(base_url().'users', 'refresh');
+ 	if ($user_id != $this->session->get('user_id')) {
+		return redirect()->to('/users');
 	} 
 
  	/*foreach($user as $key => $user):
@@ -25,8 +26,8 @@
 
 			<div class="col-md-6 col-sm-4 col-xs-12 pull-left">
 				<header class="page-header">
-					<h3><?php $datestring = "%l, %F %d, %Y"; $time = time(); //use time() for timestamp  ?>
-						<?php echo $screen; ?> Screen<br><small><?php echo mdate($datestring, $time); #echo date("l, F d, Y"); ?></small>
+					<h3><?php $datestring = "l, F d, Y"; $time = time(); //use time() for timestamp  ?>
+						<?php echo $screen; ?> Screen<br><small><?php echo date($datestring, $time); #echo date("l, F d, Y"); ?></small>
 					</h3>
 				</header>
 			</div>
@@ -36,22 +37,22 @@
 					<li>
 						<a href="<?php echo base_url(); ?>"><i class="fa fa-home"></i> Home</a>
 					</li>
-					<?php if($this->session->userdata('users') > 0 || $this->session->userdata('is_admin') ==  1): ?>
+					<?php if($this->session->get('users') > 0 || $this->session->get('is_admin') ==  1): ?>
 						<li>
-							<a href="<?php echo base_url(); ?>users/account/<?php echo $this->session->userdata('user_id'); ?>"><i class="fa fa-cog"></i> My Account</a>
+							<a href="<?php echo base_url(); ?>/users/account/<?php echo $this->session->get('user_id'); ?>"><i class="fa fa-cog"></i> My Account</a>
 						</li>
 					<?php endif; ?>
-					<?php if($this->session->userdata('is_admin') == 1 ): ?>
+					<?php if($this->session->get('is_admin') == 1 ): ?>
 						<li>
-							<a href="<?php echo base_url(); ?>admin/company" class="btn-small">Company</a>
+							<a href="<?php echo base_url(); ?>/admin/company" class="btn-small">Company</a>
 						</li>
 					<?php endif; ?>
 						<li>
-							<a href="<?php echo base_url(); ?>users/leave_details/<?php echo $this->session->userdata('user_id'); ?>">My Leave Requests</a>
+							<a href="<?php echo base_url(); ?>/users/leave_details/<?php echo $this->session->get('user_id'); ?>">My Leave Requests</a>
 						</li>
 					<?php if ($leave_requests == 1): ?>
 						<li class="active">
-							<a href="<?php echo base_url(); ?>users/leave_approvals/<?php echo $this->session->userdata('user_id'); ?>">Leave Approvals</a>
+							<a href="<?php echo base_url(); ?>/users/leave_approvals/<?php echo $this->session->get('user_id'); ?>">Leave Approvals</a>
 						</li>
 					<?php endif; ?>
 					<!-- <li>
@@ -68,7 +69,7 @@
 <div class="container-fluid">
 	<!-- Example row of columns -->
 	<div class="row">				
-		<?php $this->load->view('assets/sidebar'); ?>
+		<?php echo view('assets/sidebar'); ?>
 		<div class="section col-sm-12 col-md-11 col-lg-11">
 				<div class="container-fluid">
 					<div class="row">
@@ -120,7 +121,7 @@
 														  		<th>Purpose</th>
 														  		<th>Total Days Away</th>
 														  		<th>Total Holiday</th>
-														  		<?php if ($this->session->userdata('user_id') == 3){ ?>
+														  		<?php if ($this->session->get('user_id') == 3){ ?>
 														  			<th>Approved First by</th>
 														  		<?php } ?>
 														  		<th>Need Approval of</th>
@@ -204,7 +205,7 @@
 
 																	echo '<td align="center">'.$row->holiday_leave.' day(s)</td>';
 
-																	if ($this->session->userdata('user_id') == 3){
+																	if ($this->session->get('user_id') == 3){
 																		if ($row->supervisor_id == 3){
 																			echo '<td align="center">Reports Directly to MD</td>';
 																		} else {
@@ -453,8 +454,8 @@
 
 <div class="report_result hide hidden"></div>
 
-<?php //$this->bulletin_board->list_latest_post(); ?>
-<?php $this->load->view('assets/logout-modal'); ?>
+
+<?php echo view('assets/logout-modal'); ?>
 
 <script type="text/javascript">
 	
@@ -463,7 +464,7 @@
 	function addCommentApproved(id, leave_user_id){
 		leave_request_id = id;
 		leave_user_id = leave_user_id;
-		var user_id = "<?php echo $this->session->userdata('user_id'); ?>";
+		var user_id = "<?php echo $this->session->get('user_id'); ?>";
 		
 		$("#add_comment_textarea").val('Leave request is approved.');
 		$("#add_comment_title").text("Are you sure you want to approve this?");
@@ -480,8 +481,14 @@
 			var data = leave_request_id+'|'+add_comment+'|'+leave_user_id;	
 
 			if (add_comment != "" && leave_request_id != ""){
+
+			 
+
+
+
+
 				$.ajax({
-					'url' : '<?php echo base_url().'users/approve_leave/'.$this->session->userdata('user_id'); ?>',
+					'url' : '<?php echo base_url().'/users/approve_leave/'.$this->session->get('user_id'); ?>',
 					'type' : 'POST',
 					'data' : {'ajax_var' : data },
 					'success' : function(data){
@@ -495,7 +502,7 @@
 							if (data != 0){
 								alert('You successfully approved the leave request');
 
-								window.open("<?php echo base_url().'docs/leave_form/leave_form_'; ?>"+leave_request_id+".pdf");
+								window.open("<?php echo base_url().'/docs/leave_form/leave_form_'; ?>"+leave_request_id+".pdf");
 								$(window).focus(function() {
 									location.reload();
 								});
@@ -503,7 +510,7 @@
 								alert('The leave request is already approved!');
 							}
 						} else {
-							if (window.location.href.split('#')[0] == "<?php echo base_url().'users/leave_approvals/'.$this->session->userdata('user_id'); ?>"){
+							if (window.location.href.split('#')[0] == "<?php echo base_url().'/users/leave_approvals/'.$this->session->get('user_id'); ?>"){
 								location.reload();
 							}
 						}
@@ -511,32 +518,8 @@
 					}
 				});
 
-				// ajax_data(data,'users/approve_leave/<?php //echo $this->session->userdata('user_id') ?>',''); //alert(data);
-				// alert('You successfully approved this leave request!');
-				// $('#add_comment_modal').modal('hide');
-	
-				// if (user_id == 3){
 
-				// 	$("h4.modal-title").text("Loading PDF Leave Request...");
-				// 	$("#confirmText").html('<center><i class="fa fa-circle-o-notch fa-spin fa-5x "></i></center>');
-				// 	$("#confirmModal").modal('show');
 
-				// 	setTimeout(function(){ 
-				// 		$("#confirmModal").modal('hide');						
-						
-				// 		window.open("<?php //echo base_url().'docs/leave_form/leave_form_'; ?>"+leave_request_id+".pdf");
-
-				// 		//if (window.location.href.split('#')[0] == "<?php //echo base_url().'users/leave_approvals/'.$this->session->userdata('user_id'); ?>"){
-				// 		$(window).focus(function() {
-				// 			location.reload();
-				// 		});
-
-				// 	}, 5000);
-				// } else {
-				// 	if (window.location.href.split('#')[0] == "<?php //echo base_url().'users/leave_approvals/'.$this->session->userdata('user_id'); ?>"){
-				// 		location.reload();
-				// 	}
-				// }
 
 			} else {
 				alert("Please filled the required (*) fields");
@@ -562,11 +545,13 @@
 			var data = leave_request_id+'|'+add_comment;	
 
 			if (add_comment != "" && leave_request_id != ""){
-				ajax_data(data,'users/disapproved_leave/<?php echo $this->session->userdata('user_id'); ?>','');
+
+				$.post(baseurl+'users/disapproved_leave/<?php echo $this->session->get('user_id'); ?>',{    'ajax_var':data   });
 				alert('You successfully unapproved this leave request!');
+
 				$('#add_comment_modal').modal('hide');
 
-				if (window.location.href.split('#')[0] == "<?php echo base_url().'users/leave_approvals/'.$this->session->userdata('user_id'); ?>"){
+				if (window.location.href.split('#')[0] == "<?php echo base_url().'/users/leave_approvals/'.$this->session->get('user_id'); ?>"){
 					location.reload();
 				}
 

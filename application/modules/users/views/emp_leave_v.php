@@ -1,10 +1,17 @@
-<?php 
-	date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts
-	$this->load->module('users');
- 	$this->load->module('bulletin_board'); 
+<?php use App\Modules\Users\Controllers\Users; ?>
+<?php $this->users = new Users(); ?>
 
- 	$user_id = $this->uri->segment(3);
- 	$leave_requests = $this->session->userdata('leave_requests');
+
+
+
+<?php 
+//	date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts
+ 
+
+    $user_id = $this->request->uri->getSegment(3);
+
+
+ 	$leave_requests = $this->session->get('leave_requests');
 
 
 
@@ -12,11 +19,11 @@
  //echo '<pre>';var_dump($user_id,$direct_reportee );echo '</pre>'; 
 
 
- 	if( $user_id != $this->session->userdata('user_id') ):
+ 	if( $user_id != $this->session->get('user_id') ):
  		if(!isset($direct_reportee) || !in_array($user_id, $direct_reportee)):
- 			if($this->session->userdata('is_admin') != 1):
+ 			if($this->session->get('is_admin') != 1):
  				if ($leave_requests != 1):
- 					redirect(base_url().'users', 'refresh');
+ 					redirect(base_url().'/users', 'refresh');
  				endif;
  			endif;
  		endif;
@@ -26,7 +33,7 @@
 
  	foreach($user as $key => $user):
 
-		if($this->session->userdata('company') >= 2 ){
+		if($this->session->get('company') >= 2 ){
 
 		}else{
 			echo '<style type="text/css">.admin_access{ display: block !important;visibility: hidden !important;}</style>';
@@ -39,8 +46,8 @@
 
 			<div class="col-md-6 col-sm-4 col-xs-12 pull-left">
 				<header class="page-header">
-					<h3><?php $datestring = "%l, %F %d, %Y"; $time = time(); //use time() for timestamp  ?>
-						<?php echo $screen; ?> Screen<br><small><?php echo mdate($datestring, $time); #echo date("l, F d, Y"); ?></small>
+					<h3><?php $datestring = "l, F d, Y"; $time = time(); //use time() for timestamp  ?>
+						<?php echo $screen; ?> Screen<br><small><?php echo date($datestring, $time); #echo date("l, F d, Y"); ?></small>
 					</h3>
 				</header>
 			</div>
@@ -48,22 +55,22 @@
 			<div class="page-nav-options col-md-6 col-sm-8 col-xs-12 pull-right hidden-xs">
 				<ul class="nav nav-tabs navbar-right">
 					 
-					<?php if($this->session->userdata('users') > 0 || $this->session->userdata('is_admin') ==  1): ?>
+					<?php if($this->session->get('users') > 0 || $this->session->get('is_admin') ==  1): ?>
 						<li>
-							<a href="<?php echo base_url(); ?>users/account/<?php echo $this->session->userdata('user_id'); ?>"><i class="fa fa-cog"></i> My Account</a>
+							<a href="<?php echo base_url(); ?>/users/account/<?php echo $this->session->get('user_id'); ?>"><i class="fa fa-cog"></i> My Account</a>
 						</li>
 					<?php endif; ?>
-					<?php if($this->session->userdata('is_admin') == 1 ): ?>
+					<?php if($this->session->get('is_admin') == 1 ): ?>
 						<li>
-							<a href="<?php echo base_url(); ?>admin/company" class="btn-small">Company</a>
+							<a href="<?php echo base_url(); ?>/admin/company" class="btn-small">Company</a>
 						</li>
 					<?php endif; ?>
 						<li class="active">
-							<a href="<?php echo base_url(); ?>users/leave_details/<?php echo $this->session->userdata('user_id'); ?>">My Leave Requests</a>
+							<a href="<?php echo base_url(); ?>/users/leave_details/<?php echo $this->session->get('user_id'); ?>">My Leave Requests</a>
 						</li>
 					<?php if ($leave_requests == 1): ?>
 						<li>
-							<a href="<?php echo base_url(); ?>users/leave_approvals/<?php echo $this->session->userdata('user_id'); ?>">Leave Approvals</a>
+							<a href="<?php echo base_url(); ?>/users/leave_approvals/<?php echo $this->session->get('user_id'); ?>">Leave Approvals</a>
 						</li>
 					<?php endif; ?>
 					<!-- <li>
@@ -80,7 +87,7 @@
 <div class="container-fluid">
 	<!-- Example row of columns -->
 	<div class="row">				
-		<?php $this->load->view('assets/sidebar'); ?>
+		<?php echo view('assets/sidebar'); ?>
 		<div class="section col-sm-12 col-md-11 col-lg-11">
 				<div class="container-fluid">
 					<div class="row">
@@ -202,8 +209,8 @@
 																	echo '<tr>';
 																	echo '<td><a id="update_leave_req" onclick="editLeaveRequestbyID('.$row->leave_request_id.');" title="Edit" class="pull-left"><span class="badge btn btn-warning"><i class="fa fa-edit fa-lg"></i></span></a> &nbsp;&nbsp;&nbsp;'.date('d/m/Y', $row->date).'</td>';
 																	echo '<td>'.$row->leave_type;
-																		if($this->session->userdata('is_admin') == 1 ):  
-																			echo '<a href="'.base_url().'users/cancel_leave/'.$row->leave_request_id.'/'.$row->user_id.'" class="pull-right btn-xs btn-danger for_admin_only"  style="padding: 4px 6px;" ><em id="" class="fa fa-close"></em></a>';
+																		if($this->session->get('is_admin') == 1 ):  
+																			echo '<a href="'.base_url().'/users/cancel_leave/'.$row->leave_request_id.'/'.$row->user_id.'" class="pull-right btn-xs btn-danger for_admin_only"  style="padding: 4px 6px;" ><em id="" class="fa fa-close"></em></a>';
 																		endif;
 																	echo '</td>';
 																	echo '<td align="center">'.date('d/m/Y', $row->start_day_of_leave).' - '.date('d/m/Y', $row->end_day_of_leave).'</td>';
@@ -299,8 +306,8 @@
 																		echo '<tr '. ($row->is_active == '0' ? 'style="color: red"' : 'style="color: green"') .' >';
 																		echo '<td align="center">'.date('d/m/Y', $row->date_applied).'</td>';
 																		echo '<td>'.$row->leave_type;
-																		if($this->session->userdata('is_admin') == 1 ):  
-																			echo '<a href="'.base_url().'users/cancel_leave/'.$row->leave_request_id.'/'.$row->user_id.'" class="pull-right btn-xs btn-danger for_admin_only"  style="padding: 4px 6px;" ><em id="" class="fa fa-close"></em></a>';
+																		if($this->session->get('is_admin') == 1 ):  
+																			echo '<a href="'.base_url().'/users/cancel_leave/'.$row->leave_request_id.'/'.$row->user_id.'" class="pull-right btn-xs btn-danger for_admin_only"  style="padding: 4px 6px;" ><em id="" class="fa fa-close"></em></a>';
 																		endif;
 																	echo '</td>';
 																		echo '<td align="center">'.date('d/m/Y', $row->start_day_of_leave).' - '.date('d/m/Y', $row->end_day_of_leave).'</td>';
@@ -372,8 +379,8 @@
 																		echo '<td align="center">'.date('d/m/Y', $row->date_applied).'</td>';
 																		echo '<td>'.$row->leave_type;
 
-																		if($this->session->userdata('is_admin') == 1 ):  
-																			echo '<a href="'.base_url().'users/cancel_leave/'.$row->leave_request_id.'/'.$row->user_id.'" class="pull-right btn-xs btn-danger for_admin_only"  style="padding: 4px 6px;" ><em id="" class="fa fa-close"></em></a>';
+																		if($this->session->get('is_admin') == 1 ):  
+																			echo '<a href="'.base_url().'/users/cancel_leave/'.$row->leave_request_id.'/'.$row->user_id.'" class="pull-right btn-xs btn-danger for_admin_only"  style="padding: 4px 6px;" ><em id="" class="fa fa-close"></em></a>';
 																		endif;
 
 																		echo '</td>';
@@ -486,8 +493,8 @@
 																	
 																	echo date('d/m/Y', $row->date_applied).'</td>';
 																	echo '<td>'.$row->leave_type;
-																		if($this->session->userdata('is_admin') == 1 ):  
-																			echo '<a href="'.base_url().'users/cancel_leave/'.$row->leave_request_id.'/'.$row->user_id.'" class="pull-right btn-xs btn-danger for_admin_only"  style="padding: 4px 6px;" ><em id="" class="fa fa-close"></em></a>';
+																		if($this->session->get('is_admin') == 1 ):  
+																			echo '<a href="'.base_url().'/users/cancel_leave/'.$row->leave_request_id.'/'.$row->user_id.'" class="pull-right btn-xs btn-danger for_admin_only"  style="padding: 4px 6px;" ><em id="" class="fa fa-close"></em></a>';
 																		endif;
 																	echo '</td>';
 																	echo '<td align="center">'.date('d/m/Y', $row->start_day_of_leave).' - '.date('d/m/Y', $row->end_day_of_leave).'</td>';
@@ -529,16 +536,18 @@
 
 <div class="report_result hide hidden"></div>
 
-<?php $this->bulletin_board->list_latest_post(); ?>
-<?php $this->load->view('assets/logout-modal'); ?>
+
 <?php 
-
-if(isset($_GET['view_approved'])){
-echo '<script type="text/javascript">setTimeout(function(){$("#myTab .fa-calendar-check-o").parent().trigger("click");},2000);</script>';
-}
-
-
-
+	if(isset($_GET['view_approved'])){
+		echo '<script type="text/javascript">setTimeout(function(){$("#myTab .fa-calendar-check-o").parent().trigger("click");},2000);</script>';
+	}
 ?>
 
 
+<?php 
+	use App\Modules\Bulletin_board\Controllers\Bulletin_board;
+	$this->bulletin_board = new Bulletin_board();
+?>
+<?php //review_code ?>
+<?php $this->bulletin_board->list_latest_post(); ?>
+<?php echo view('assets/logout-modal'); ?>

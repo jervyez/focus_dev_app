@@ -1,19 +1,41 @@
-<?php date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts ?>
-<?php $this->load->module('users'); ?>
-<?php $user_id_page = $this->uri->segment(3); ?>
-<?php
-	  $is_admin = $this->session->userdata('is_admin');
-	  $leave_alloc = $this->users->leave_alloc($user_id_page);	
-	  $get_sched_of_work = $this->users->get_sched($user_id_page);
-	  $leave_requests = $this->session->userdata('leave_requests');
-	  if (!empty($get_sched_of_work)){
-		$get_sched_val = explode(',', $get_sched_of_work->sched_of_work);
-	  }
+<?php // date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts ?>
+
+<?php use App\Modules\Users\Controllers\Users; ?>
+<?php $this->users = new Users(); ?>
+<?php $this->session = \Config\Services::session(); ?>
+
+<?php 
+use App\Modules\Admin\Controllers\Admin;
+use App\Modules\Admin\Models\Admin_m;
+
+$this->admin = new Admin();
+$this->admin_m = new Admin_m();
 ?>
 
-<script src="<?php echo base_url(); ?>js/vue.js"></script>
-<script src="<?php echo base_url(); ?>js/moment.min.js"></script>
-<script src="<?php echo base_url(); ?>js/vue-select.js"></script>
+
+
+
+
+<?php // $user_id_page = 2; ?>
+
+
+<?php $this->request = \Config\Services::request(); ?>
+
+
+<?php
+	  $is_admin = $this->session->get('is_admin');
+	  $leave_alloc = $this->users->leave_alloc($user_id_page);	
+	  $get_sched_of_work = $this->users->get_sched($user_id_page);
+	  $leave_requests = $this->session->get('leave_requests');
+	  if (!empty($get_sched_of_work)){
+			$get_sched_val = explode(',', $get_sched_of_work->sched_of_work);
+	  }
+
+?>
+
+<script src="<?php echo base_url(); ?>/js/vue.js"></script>
+<script src="<?php echo base_url(); ?>/js/moment.min.js"></script>
+<script src="<?php echo base_url(); ?>/js/vue-select.js"></script>
 
 <!-- title bar -->
 <div class="container-fluid head-control">
@@ -22,8 +44,8 @@
 
 			<div class="col-md-6 col-sm-4 col-xs-12 pull-left">
 				<header class="page-header">
-					<h3><?php $datestring = "%l, %F %d, %Y"; $time = time(); //use time() for timestamp  ?>
-						<?php echo $screen; ?> Screen<br><small><?php echo mdate($datestring, $time); #echo date("l, F d, Y"); ?></small>
+					<h3><?php $datestring = "l, F d, Y"; $time = time(); //use time() for timestamp  ?>
+						<?php echo $screen; ?> Screen<br><small><?php echo date($datestring, $time); #echo date("l, F d, Y"); ?></small>
 					</h3>
 				</header>
 			</div>
@@ -33,20 +55,20 @@
 					<li>
 						<a href="<?php echo base_url(); ?>"><i class="fa fa-home"></i> Home</a>
 					</li>
-					<?php if($this->session->userdata('is_admin') == 1 ): ?>
+					<?php if($this->session->get('is_admin') == 1 ): ?>
 						<li>
-							<a href="<?php echo base_url(); ?>admin/company" class="btn-small">Company</a>
+							<a href="<?php echo base_url(); ?>/admin/company" class="btn-small">Company</a>
 						</li>
 					<?php endif; ?>
 					<li>
-						<a href="<?php echo base_url(); ?>users" class="btn-small">Users</a>
+						<a href="<?php echo base_url(); ?>/users" class="btn-small">Users</a>
 					</li>
 					<li>
-						<a href="<?php echo base_url(); ?>users/leave_details/<?php echo $this->session->userdata('user_id'); ?>">My Leave Requests</a>
+						<a href="<?php echo base_url(); ?>/users/leave_details/<?php echo $this->session->get('user_id'); ?>">My Leave Requests</a>
 					</li>
 					<?php if ($leave_requests == 1): ?>
 						<li>
-							<a href="<?php echo base_url(); ?>users/leave_approvals/<?php echo $this->session->userdata('user_id'); ?>">Leave Approvals</a>
+							<a href="<?php echo base_url(); ?>/users/leave_approvals/<?php echo $this->session->get('user_id'); ?>">Leave Approvals</a>
 						</li>
 					<?php endif; ?>
 					<!-- <li>
@@ -63,7 +85,7 @@
 <div class="container-fluid">
 	<!-- Example row of columns -->
 	<div class="row">
-		<?php $this->load->view('assets/sidebar'); ?>
+		<?php echo view('assets/sidebar'); ?>
 		<div class="section col-sm-12 col-md-11 col-lg-11">
 			<div class="container-fluid">
 
@@ -76,24 +98,24 @@
 					<div class="col-md-9">
 						<div class="left-section-box">
 							<div class="box-head pad-10 clearfix">
-							<?php if($this->session->userdata('is_admin') ==  1): ?>
+							<?php if($this->session->get('is_admin') ==  1): ?>
 								<a href="../delete_user/<?php echo $user_id_page; ?>" class="btn btn-danger submit_form pull-right" id="focus_add_company" name="save_bttn" >Delete User</a>
 							<?php endif; ?>
 
-							<input type="hidden" name="user_id_access" value="<?php echo $this->session->userdata('user_id'); ?>">
+							<input type="hidden" name="user_id_access" value="<?php echo $this->session->get('user_id'); ?>">
 
 
 
 							<?php if(isset($direct_reportee) && in_array($user_id_page, $direct_reportee)): ?>
-								<a target="_blank" href="<?php echo base_url(); ?>users/leave_details/<?php echo $user_id_page; ?>" class="btn btn-info submit_form pull-right" id="apply_other_user" name="apply_other_user" style="margin-right: 5px;">View Leave Requests of this User</a>
+								<a target="_blank" href="<?php echo base_url(); ?>/users/leave_details/<?php echo $user_id_page; ?>" class="btn btn-info submit_form pull-right" id="apply_other_user" name="apply_other_user" style="margin-right: 5px;">View Leave Requests of this User</a>
 							
-								<?php  if ($leave_requests == 1): if ($this->session->userdata('user_id') != $user_id_page): ?>	
+								<?php  if ($leave_requests == 1): if ($this->session->get('user_id') != $user_id_page): ?>	
 										<a class="btn btn-warning submit_form pull-right" id="apply_other_user" name="apply_other_user" style="margin-right: 5px; cursor: pointer;" onclick="apply_for_leave(<?php echo $user_id_page; ?>);">Apply Leave for this User</a>
 								<?php endif; endif; ?>
 
 							<?php else: ?>
-								<?php  if ($leave_requests == 1): if ($this->session->userdata('user_id') != $user_id_page): ?>	
-										<a target="_blank" href="<?php echo base_url(); ?>users/leave_details/<?php echo $user_id_page; ?>" class="btn btn-info submit_form pull-right" id="apply_other_user" name="apply_other_user" style="margin-right: 5px;">View Leave Requests of this User</a>
+								<?php  if ($leave_requests == 1): if ($this->session->get('user_id') != $user_id_page): ?>	
+										<a target="_blank" href="<?php echo base_url(); ?>/users/leave_details/<?php echo $user_id_page; ?>" class="btn btn-info submit_form pull-right" id="apply_other_user" name="apply_other_user" style="margin-right: 5px;">View Leave Requests of this User</a>
 										<a class="btn btn-warning submit_form pull-right" id="apply_other_user" name="apply_other_user" style="margin-right: 5px; cursor: pointer;" onclick="apply_for_leave(<?php echo $user_id_page; ?>);">Apply Leave for this User</a>
 								<?php endif; endif; ?>
 							<?php endif; ?>
@@ -111,23 +133,23 @@
 							<div class="box-area clearfix">
 
 
-								<?php if(@$this->session->flashdata('new_pass_msg')): ?>
+								<?php if(@$this->session->getFlashdata('new_pass_msg')): ?>
 									<div class="no-pad-t m-bottom-10 pad-left-10">
 										<div class="border-less-box alert alert-success fade in">
 											<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 											<h4>The new password is been set!</h4>
-											<?php echo $this->session->flashdata('new_pass_msg');?>
+											<?php echo $this->session->getFlashdata('new_pass_msg');?>
 										</div>
 									</div>
 								<?php endif; ?>
 
 
-								<?php if(@$this->session->flashdata('account_update_msg')): ?>
+								<?php if(@$this->session->getFlashdata('account_update_msg')): ?>
 									<div class="no-pad-t m-bottom-10 pad-left-10">
 										<div class="border-less-box alert alert-success fade in">
 											<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 											<h4>Cheers!</h4>
-											<?php echo $this->session->flashdata('account_update_msg');?>
+											<?php echo $this->session->getFlashdata('account_update_msg');?>
 										</div>
 									</div>
 								<?php endif; ?>
@@ -146,34 +168,34 @@
 
 
 
-							<?php if(@$this->session->flashdata('user_access')): ?>
+							<?php if(@$this->session->getFlashdata('user_access')): ?>
 								<div class="m-15">
 								<div class="border-less-box alert alert-success fade in">
 										<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 										<h4>Cheers!</h4>
-										<?php echo $this->session->flashdata('user_access');?>
+										<?php echo $this->session->getFlashdata('user_access');?>
 									</div>
 								</div>
 							<?php endif; ?>
 
-							<?php if(@$this->session->flashdata('total_leave_error')): ?>
+							<?php if(@$this->session->getFlashdata('total_leave_error')): ?>
 								<div class="pad-10 no-pad-t">
 									<div class="border-less-box alert alert-danger fade in">
 										<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 										<h4>Oh snap! You got an error!</h4>
 										<?php //echo $error;?>
 
-										<?php echo $this->session->flashdata('total_leave_error');?>
+										<?php echo $this->session->getFlashdata('total_leave_error');?>
 									</div>
 								</div>
 							<?php endif; ?>
 
-							<?php if(@$this->session->flashdata('total_leave')): ?>
+							<?php if(@$this->session->getFlashdata('total_leave')): ?>
 								<div class="m-15">
 								<div class="border-less-box alert alert-success fade in">
 										<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 										<h4>Cheers!</h4>
-										<?php echo $this->session->flashdata('total_leave');?>
+										<?php echo $this->session->getFlashdata('total_leave');?>
 									</div>
 								</div>
 							<?php endif; ?>
@@ -189,7 +211,7 @@
 												<?php $user_id = $user->user_id; ?>
 												<?php $is_user_admin = $user->if_admin; ?>
 
-												<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('user_id') == $user_id  || $this->session->userdata('is_admin') ==  1  ): ?>
+												<?php if( $this->session->get('users') > 1 || $this->session->get('user_id') == $user_id  || $this->session->get('is_admin') ==  1  ): ?>
 													<form class="form-horizontal clearfix form" role="form" method="post" action="" accept-charset="utf-8" enctype="multipart/form-data">
 												<?php endif; ?>
 
@@ -200,16 +222,16 @@
 											<div class="col-xs-12 m-bottom-10 clearfix ">
 												<div class="primary_photo_wraper pad-top-5" >
 													<?php if($user->user_profile_photo!= ''):  ?>
-														<img src="<?php echo base_url(); ?>uploads/users/<?php echo $user->user_profile_photo; ?>" class="user_avatar img-responsive">	
+														<img src="<?php echo base_url(); ?>/uploads/users/<?php echo $user->user_profile_photo; ?>" class="user_avatar img-responsive">	
 													<?php else: ?>
-														<img src="<?php echo base_url(); ?>uploads/users/no-avatar.jpg" class="user_avatar img-responsive">
+														<img src="<?php echo base_url(); ?>/uploads/users/no-avatar.jpg" class="user_avatar img-responsive">
 													<?php endif; ?>												
 												</div>	
 												<script type="text/javascript">$('.primary_photo_wraper').css('height', $('img.user_avatar').innerWidth() );  </script>											
 											</div>
 
 
-											<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('user_id') == $user_id  || $this->session->userdata('is_admin') ==  1  ): ?>
+											<?php if( $this->session->get('users') > 1 || $this->session->get('user_id') == $user_id  || $this->session->get('is_admin') ==  1  ): ?>
 												<div class="col-xs-12 m-bottom-10 clearfix  <?php if(@$upload_error){ echo 'has-error has-feedback';} ?>  ">
 													<label for="profile_photo" class="col-sm-12 control-label text-center center">Profile Photo</label>
 													<div class="col-sm-12">
@@ -231,26 +253,26 @@
 
 											<div class="box-area pad-5 clearfix">
 
-												<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('user_id') == $user_id || $this->session->userdata('is_admin') ==  1  ): ?>
+												<?php if( $this->session->get('users') > 1 || $this->session->get('user_id') == $user_id || $this->session->get('is_admin') ==  1  ): ?>
 
 
 
-													<div class="col-xs-12 m-bottom-10 clearfix <?php if(form_error('first_name')){ echo 'has-error has-feedback';} ?>">
+													<div class="col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('first_name') ?? 'has-error has-feedback';  ?>">
 														<input type="text" class="form-control" id="first_name" name="first_name"  tabindex="1" placeholder="First Name*"  value="<?php echo $user->user_first_name; ?>">
 													</div>
 
-													<div class="col-xs-12 m-bottom-10 clearfix <?php if(form_error('last_name')){ echo 'has-error has-feedback';} ?>" >													
+													<div class="col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('last_name') ?? 'has-error has-feedback';  ?>" >													
 														<input type="text" class="form-control" id="last_name" name="last_name"  tabindex="2" placeholder="Last Name*"  style="text-transform: none !important;" value="<?php echo $user->user_last_name; ?>">
 													</div>
 
-													<div class="col-xs-12 m-bottom-10 clearfix <?php if(form_error('gender')){ echo 'has-error has-feedback';} ?>">													
+													<div class="col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('gender') ?? 'has-error has-feedback';  ?>">													
 														<select name="gender" class="form-control gender" tabindex="3" id="gender"><option value="Male">Male</option><option value="Female">Female</option></select>
 														<script type="text/javascript">$('.gender').val('<?php echo $user->user_gender; ?>');</script>
 													</div>
 
-													<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1  ): ?>
+													<?php if( $this->session->get('users') > 1 || $this->session->get('is_admin') ==  1  ): ?>
 
-														<div class="col-xs-12 m-bottom-10 clearfix <?php if(form_error('dob')){ echo 'has-error has-feedback';} ?>">													
+														<div class="col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('dob') ?? 'has-error has-feedback';  ?>">													
 															<input type="text" data-date-format="dd/mm/yyyy" placeholder="Date of Birth* DD/MM/YY" class="form-control datepicker" id="dob" name="dob" tabindex="4" value="<?php echo $user->user_date_of_birth; ?>">											
 														</div>
 
@@ -315,12 +337,12 @@
 
 
 
-									<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('user_id') == $user_id || $this->session->userdata('is_admin') ==  1  ): ?>
+									<?php if( $this->session->get('users') > 1 || $this->session->get('user_id') == $user_id || $this->session->get('is_admin') ==  1  ): ?>
 											
 
-											<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1  ): ?>
+											<?php if( $this->session->get('users') > 1 || $this->session->get('is_admin') ==  1  ): ?>
 
-												<div class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix <?php if(form_error('department')){ echo 'has-error has-feedback';} ?>">
+												<div class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('department') ?? 'has-error has-feedback';  ?>">
 													<label for="department" class="col-sm-3 control-label">Department</label>
 													<div class="col-sm-9">
 														<select name="department" class="form-control department" id="department"  tabindex="7">
@@ -330,13 +352,19 @@
 															<?php endforeach; ?>
 														</select>
 
-														<?php $department = ($this->input->post('department') != '' ? $this->input->post('department') : ''); ?>
+
+
+														<?php $department =  $_POST['department'] ?? null;   ?>
+
+
+
+
 														<script type="text/javascript">$('.department').val('<?php echo $user->department_id.'|'.$user->department_name; ?>');</script>
 													</div>
 												</div>
 
 
-												<div class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix <?php if(form_error('focus')){ echo 'has-error has-feedback';} ?>">
+												<div class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('focus') ?? 'has-error has-feedback';  ?> ">
 													<label for="focus" class="col-sm-3 control-label">Focus</label>
 													<div class="col-sm-9">
 														<select name="focus" class="form-control focus" id="focus" tabindex="10">
@@ -379,7 +407,7 @@
 													</div>
 												</div>
 
-												<div class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix <?php if(form_error('focus')){ echo 'has-error has-feedback';} ?>">
+												<div class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('focus') ?? 'has-error has-feedback';  ?>">
 													<label for="focus" class="col-sm-3 control-label">Direct Reports</label>
 													<div class="col-sm-9">
 
@@ -478,7 +506,7 @@
 											</div>
 											<?php endif; ?>
 
-											<?php if($this->session->userdata('is_admin') ==  1): ?>
+											<?php if($this->session->get('is_admin') ==  1): ?>
 
 												<div class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix ">
 													<label for="is_dummy" class="col-sm-4 control-label">Dummy Account</label>
@@ -532,9 +560,9 @@
 										
 										<div class="box-area pad-5 clearfix">
 
-										<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('user_id') == $user_id  || $this->session->userdata('is_admin') ==  1  ): ?>
+										<?php if( $this->session->get('users') > 1 || $this->session->get('user_id') == $user_id  || $this->session->get('is_admin') ==  1  ): ?>
 
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('direct_landline')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('direct_landline') ?? 'has-error has-feedback';  ?>">
 												<label for="direct_landline" class="col-sm-5 control-label">Direct Landline</label>
 												<div class="col-sm-7">
 
@@ -545,7 +573,7 @@
 												</div>
 											</div>
 
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('after_hours')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('after_hours') ?? 'has-error has-feedback';  ?>">
 												<label for="after_hours" class="col-sm-4 control-label">After Hours</label>
 												<div class="col-sm-8">
 
@@ -578,10 +606,12 @@
 												</div>
 											</div>
 
-											<?php if($this->session->userdata('is_admin') ==  1): ?>
 
 
-												<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('email')){ echo 'has-error has-feedback';} ?>">
+											<?php if($this->session->get('is_admin') ==  1): ?>
+
+
+												<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('email') ?? 'has-error has-feedback';  ?>">
 													<label for="email" class="col-sm-4 control-label">Email</label>
 													<div class="col-sm-8">
 														<input type="email" class="form-control" id="email" name="email"  tabindex="14" placeholder="Email"  value="<?php echo $user->general_email; ?>">
@@ -589,7 +619,7 @@
 													<input type="hidden" name="email_id" value="<?php echo $user->email_id; ?>">
 												</div>
 
-												<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('personal_email')){ echo 'has-error has-feedback';} ?>">
+												<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('personal_email') ?? 'has-error has-feedback';  ?>">
 													<label for="personal_email" class="col-sm-4 control-label">Personal Email</label>
 													<div class="col-sm-8">
 														<input type="email" class="form-control" id="personal_email" name="personal_email"  tabindex="14" placeholder="Personal Email"  value="<?php echo $user->personal_email; ?>">
@@ -597,7 +627,10 @@
 													<input type="hidden" name="email_id" value="<?php echo $user->email_id; ?>">
 												</div>
 
-												<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('skype_id')){ echo 'has-error has-feedback';} ?>">
+
+
+
+												<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('skype_id') ?? 'has-error has-feedback';  ?>">
 													<label for="skype_id" class="col-sm-4 control-label">Skype ID</label>
 													<div class="col-sm-8">
 														<input type="text" class="form-control" id="skype_id" name="skype_id"  tabindex="15" placeholder="Skype ID"  value="<?php echo $user->user_skype; ?>" style="text-transform: none;">
@@ -618,7 +651,7 @@
 													</div>
 												<?php endif; ?>
 
-												<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('personal_email')){ echo 'has-error has-feedback';} ?>">
+												<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('personal_email') ?? 'has-error has-feedback';  ?>">
 													<label for="personal_email" class="col-sm-4 control-label">Personal Email</label>
 													<div class="col-sm-8">
 														<input type="email" class="form-control" id="personal_email" name="personal_email"  tabindex="14" placeholder="personal email"  value="<?php echo $user->personal_email; ?>">
@@ -695,9 +728,9 @@
 
 
 
-											<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('user_id') == $user_id  || $this->session->userdata('is_admin') ==  1  ): ?>
+											<?php if( $this->session->get('users') > 1 || $this->session->get('user_id') == $user_id  || $this->session->get('is_admin') ==  1  ): ?>
 											
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('skype_password')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->getError('skype_password') ?? 'has-error has-feedback';  ?>">
 												<label for="skype_password" class="col-sm-5 control-label">Skype Password</label>
 												<div class="col-sm-7">
 													
@@ -731,7 +764,7 @@
 										<div class="box-area pad-5 clearfix">
 											<div class="clearfix">												
 												<div class="pad-10">
-												<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('user_id') == $user_id  || $this->session->userdata('is_admin') ==  1  ): ?>
+												<?php if( $this->session->get('users') > 1 || $this->session->get('user_id') == $user_id  || $this->session->get('is_admin') ==  1  ): ?>
 													<textarea class="form-control" id="comments" rows="12"  tabindex="16" name="comments"><?php echo $user->comments; ?></textarea>
 												<?php else: ?>
 													<?php if( trim($user->comments) != '' ): ?>
@@ -753,20 +786,21 @@
 
 									<input type="hidden" name="is_form_submit" value="1">
 
-									<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('user_id') == $user_id  || $this->session->userdata('is_admin') ==  1  ): ?>
+									<?php if( $this->session->get('users') > 1 || $this->session->get('user_id') == $user_id  || $this->session->get('is_admin') ==  1  ): ?>
 										<div class="m-top-15 clearfix">
 											<div>
 												<button type="submit" class="btn btn-success btn-lg submit_form" id="focus_add_company" name="save_bttn" value="Save"><i class="fa fa-floppy-o"></i> Update</button>
 											</div>
 										</div>
+
 									<?php endif; ?>
-								<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('user_id') == $user_id  || $this->session->userdata('is_admin') ==  1  ): ?>
+								<?php if( $this->session->get('users') > 1 || $this->session->get('user_id') == $user_id  || $this->session->get('is_admin') ==  1  ): ?>
 									</form>
 								<?php endif; ?>
 
-								<input type="hidden" name="user_id_access" value="<?php echo $this->session->userdata('user_id'); ?>">
+								<input type="hidden" name="user_id_access" value="<?php echo $this->session->get('user_id'); ?>">
 
-								<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('user_id') == $user_id || $this->session->userdata('is_admin') ==  1 || $leave_requests == 1 ): ?>
+								<?php if( $this->session->get('users') > 1 || $this->session->get('user_id') == $user_id || $this->session->get('is_admin') ==  1 || $leave_requests == 1 ): ?>
 									<div class="box">
 										<div class="box-head pad-5">
 											<label for="project_notes"><i class="fa fa-calendar fa-lg"></i> Schedule of Work and Total Leaves</label>
@@ -778,7 +812,7 @@
 												<div class="col-sm-2" style="padding-left: 20px;">
 													<?php 
 														if (!$leave_alloc): 
-															if( $this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1  ):
+															if( $this->session->get('users') > 1 || $this->session->get('is_admin') ==  1  ):
 																echo '<form id="add_leave_total" method="post" action="../add_leave_alloc/'.$user_id_page.'">';
 															endif; 
 													 	else: 
@@ -800,7 +834,7 @@
 
 														<input type="hidden" name="is_offshore_update" value="<?php echo $user->is_offshore; ?>">
 
-														<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1  ): ?>
+														<?php if( $this->session->get('users') > 1 || $this->session->get('is_admin') ==  1  ): ?>
 
 															<div class="clearfix"></div><br>
 
@@ -809,7 +843,11 @@
 																<select name="leave_rate_type" class="form-control leave_rate_type" id="leave_rate_type" tabindex="">
 																	<option value="">Select Type</option>
 
-																	<?php if (!empty($leave_alloc)){ ?>
+																	<?php if ($leave_alloc){ ?>
+
+
+																	<script type="text/javascript">$('.leave_rate_type').val('<?php echo $leave_alloc->leave_rate_type; ?>');</script>
+
 
 																	<option value="1" <?php if($leave_alloc->leave_rate_type == '1'){ echo 'selected'; } ?>>AU - Salaried</option>
 																	<option value="2" <?php if($leave_alloc->leave_rate_type == '2'){ echo 'selected'; } ?>>AU - Wages</option>
@@ -822,11 +860,9 @@
 																	<option value="3">Manila Staff</option>
 
 																	<?php } ?>
-
 																</select>
 
-																<?php $leave_rate_type = ($this->input->post('leave_rate_type') != '' ? $this->input->post('leave_rate_type') : ''); ?>
-																<script type="text/javascript">$('.leave_rate_type').val('<?php echo $leave_alloc->leave_rate_type; ?>');</script>
+																<?php // $leave_rate_type =  $_POST['leave_rate_type'] ?? null; ?>
 															</div>
 														<?php else: ?>
 
@@ -863,45 +899,45 @@
 
 														<!-- <div class="checkbox">
 														    <label>
-														      <input type="checkbox" name="sched[]" value="0" <?php //if (!empty($get_sched_of_work)){echo (in_array("0", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?>>&nbsp;&nbsp;Sunday
+														      <input type="checkbox" name="sched[]" value="0" <?php //if (!empty($get_sched_of_work)){echo (in_array("0", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->get('users') > 1 || $this->session->get('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?>>&nbsp;&nbsp;Sunday
 														    </label>
 														</div>  -->
 
 														
 														
-														<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1  ): ?>
+														<?php if( $this->session->get('users') > 1 || $this->session->get('is_admin') ==  1  ): ?>
 														<?php else: ?>
 																<div class="clearfix"></div><br>
 														<?php endif; ?>
 
 														<div class="checkbox">
 														    <label>
-														      <input type="checkbox" name="sched[]" value="1" <?php if (!empty($get_sched_of_work)){echo (in_array("1", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?> <?php if (empty($get_sched_of_work)){echo 'checked';} ?>>&nbsp;&nbsp;Monday
+														      <input type="checkbox" name="sched[]" value="1" <?php if (!empty($get_sched_of_work)){echo (in_array("1", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->get('users') > 1 || $this->session->get('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?> <?php if (empty($get_sched_of_work)){echo 'checked';} ?>>&nbsp;&nbsp;Monday
 														    </label>
 														</div>
 														<div class="checkbox">
 														    <label>
-														      <input type="checkbox" name="sched[]" value="2" <?php if (!empty($get_sched_of_work)){echo (in_array("2", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?> <?php if (empty($get_sched_of_work)){echo 'checked';} ?>>&nbsp;&nbsp;Tuesday
+														      <input type="checkbox" name="sched[]" value="2" <?php if (!empty($get_sched_of_work)){echo (in_array("2", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->get('users') > 1 || $this->session->get('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?> <?php if (empty($get_sched_of_work)){echo 'checked';} ?>>&nbsp;&nbsp;Tuesday
 														    </label>
 														</div>
 														<div class="checkbox">
 														    <label>
-														      <input type="checkbox" name="sched[]" value="3" <?php if (!empty($get_sched_of_work)){echo (in_array("3", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?> <?php if (empty($get_sched_of_work)){echo 'checked';} ?>>&nbsp;&nbsp;Wednesday
+														      <input type="checkbox" name="sched[]" value="3" <?php if (!empty($get_sched_of_work)){echo (in_array("3", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->get('users') > 1 || $this->session->get('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?> <?php if (empty($get_sched_of_work)){echo 'checked';} ?>>&nbsp;&nbsp;Wednesday
 														    </label>
 														</div>
 														<div class="checkbox">
 														    <label>
-														      <input type="checkbox" name="sched[]" value="4" <?php if (!empty($get_sched_of_work)){echo (in_array("4", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?> <?php if (empty($get_sched_of_work)){echo 'checked';} ?>>&nbsp;&nbsp;Thursday	
+														      <input type="checkbox" name="sched[]" value="4" <?php if (!empty($get_sched_of_work)){echo (in_array("4", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->get('users') > 1 || $this->session->get('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?> <?php if (empty($get_sched_of_work)){echo 'checked';} ?>>&nbsp;&nbsp;Thursday	
 														    </label>
 														</div>
 														<div class="checkbox">
 														    <label>
-														      <input type="checkbox" name="sched[]" value="5" <?php if (!empty($get_sched_of_work)){echo (in_array("5", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?> <?php if (empty($get_sched_of_work)){echo 'checked';} ?>>&nbsp;&nbsp;Friday
+														      <input type="checkbox" name="sched[]" value="5" <?php if (!empty($get_sched_of_work)){echo (in_array("5", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->get('users') > 1 || $this->session->get('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?> <?php if (empty($get_sched_of_work)){echo 'checked';} ?>>&nbsp;&nbsp;Friday
 														    </label>
 														</div>
 														<!-- <div class="checkbox">
 														    <label>
-														      <input type="checkbox" name="sched[]" value="6" <?php //if (!empty($get_sched_of_work)){echo (in_array("6", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?>>&nbsp;&nbsp;Saturday
+														      <input type="checkbox" name="sched[]" value="6" <?php //if (!empty($get_sched_of_work)){echo (in_array("6", $get_sched_val) ? 'checked="checked"' : '');} echo ($this->session->get('users') > 1 || $this->session->get('is_admin') ==  1) ? '' : 'disabled="TRUE"'; ?>>&nbsp;&nbsp;Saturday
 														    </label>
 														</div> -->
 														<br>
@@ -911,7 +947,7 @@
 
 													<div class="col-sm-5">
 
-														<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1  ): ?>
+														<?php if( $this->session->get('users') > 1 || $this->session->get('is_admin') ==  1  ): ?>
 															<label for="annual_manual_entry" class="col-sm-6 control-label">Starting Annual Leave*:</label>
 															<div class="col-sm-6">		
 																<div class="input-group ">
@@ -938,7 +974,7 @@
 																	$total_annual_points = $annual_accumulated + $last_annual_accumulated;
 																}
 
-																$converted_annual_holidays = $annual_holidays->holidays * $leave_alloc->no_hrs_of_work;
+																$converted_annual_holidays = intval($annual_holidays->holidays) * intval($leave_alloc->no_hrs_of_work ?? 0);
 															}
 														?>
 
@@ -968,7 +1004,7 @@
 
 													<div class="col-sm-5">
 
-														<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1  ): ?>
+														<?php if( $this->session->get('users') > 1 || $this->session->get('is_admin') ==  1  ): ?>
 
 															<label for="personal_manual_entry" class="col-sm-6 control-label">Starting Personal Leave*:</label>
 															<div class="col-sm-6">
@@ -996,7 +1032,12 @@
 																	$total_personal_points = $personal_accumulated + $last_personal_accumulated;
 																}
 
-																$converted_sick_holidays = $sick_holidays->holidays * $leave_alloc->no_hrs_of_work;
+																// $converted_sick_holidays = $sick_holidays->holidays * $leave_alloc->no_hrs_of_work;
+
+
+																$converted_sick_holidays = intval($sick_holidays->holidays) * intval($leave_alloc->no_hrs_of_work ?? 0);
+
+
 															}
 														?>
 
@@ -1027,7 +1068,7 @@
 
 													<div class="pad-top-10 m-top-10 row">
 														<?php 
-															if( $this->session->userdata('users') > 1 || $this->session->userdata('is_admin') ==  1  ): ?>
+															if( $this->session->get('users') > 1 || $this->session->get('is_admin') ==  1  ): ?>
 															<?php if (!$leave_alloc): ?>
 																	<div class="pad-top-10 m-top-10 col-sm-4 col-sm-offset-3">
 																		<button type="submit" class="btn btn-warning" name="insert_leave_alloc" id="insert_leave_alloc">Insert Leave Allocations and Work Schedule</button>
@@ -1039,7 +1080,7 @@
 															<?php 
 																endif;
 															else: ?>
-																<?php if ($leave_alloc && $user_id_page == $this->session->userdata('user_id')): ?>
+																<?php if ($leave_alloc && $user_id_page == $this->session->get('user_id')): ?>
 																	<!--<div class="pad-top-10 m-top-10 col-sm-4 col-sm-offset-3">
 																		<button type="submit" class="btn btn-primary" name="update_leave_alloc">Update Work Schedule</button>
 																	</div>-->
@@ -1089,7 +1130,7 @@
 
 					<div class="m-top-10">
 
-						<?php $user_role_id = $this->session->userdata['user_role_id']; ?>
+						<?php $user_role_id = $this->session->get('user_role_id'); ?>
 
 					<div class="panel-group" role="tablist">
 							<div class="panel panel-default">
@@ -1102,7 +1143,7 @@
 								</div> 
  
 
-								<?php if( $this->session->userdata('is_admin') == 1 ||  $user_role_id == 4  ||  $user_role_id == 8 || $user_role_id == 3 || $user_role_id == 2 || $user_role_id == 20 || $user_role_id == 7 || $user_role_id ==  16 || $user_id_page == $this->session->userdata['user_id']  ): ?>
+								<?php if( $this->session->get('is_admin') == 1 ||  $user_role_id == 4  ||  $user_role_id == 8 || $user_role_id == 3 || $user_role_id == 2 || $user_role_id == 20 || $user_role_id == 7 || $user_role_id ==  16 || $user_id_page == $this->session->get['user_id']  ): ?>
 
 								<div id="collapseListGroup2" class="panel-collapse collapse" role="tabpanel" aria-labelledby="collapseListGroupHeading1" aria-expanded="false" style="height: 0px;">
 
@@ -1112,17 +1153,17 @@
 
 
 											<label class="control-label m-top-5 col-xs-12 pointer set_ave_def" style="color: green;"><i class="fa fa-check-circle"></i> Available </label>
-											<label class="control-label m-top-5 col-xs-12 pointer set_ave" style="color: orange;" data-toggle="modal"   data-target="#set_availability"  data-backdrop="static" tabindex="-1"><i class="fa fa-arrow-circle-left"></i> Out of Office </label>
-											<label class="control-label m-top-5 col-xs-12 pointer set_ave" style="color: red;" data-toggle="modal"   data-target="#set_availability"  data-backdrop="static" tabindex="-1"><i class="fa fa-exclamation-circle"></i> Busy </label>
-											<label class="control-label m-top-5 col-xs-12 pointer set_ave" style="color: gray;" data-toggle="modal"  data-target="#set_availability" data-backdrop="static"  tabindex="-1"><i class="fa fa-minus-circle"></i> Leave </label>
-											<label class="control-label m-top-5 col-xs-12 pointer set_ave" style="color: purple;" data-toggle="modal"  data-target="#set_availability" data-backdrop="static"   tabindex="-1"><i class="fa fa-times-circle"></i> Sick</label>
+											<label class="control-label m-top-5 col-xs-12 pointer set_ave" style="color: orange;" data-toggle="modal" data-backdrop="static"  data-target="#set_availability" tabindex="-1"><i class="fa fa-arrow-circle-left"></i> Out of Office </label>
+											<label class="control-label m-top-5 col-xs-12 pointer set_ave" style="color: red;" data-toggle="modal" data-backdrop="static"  data-target="#set_availability" tabindex="-1"><i class="fa fa-exclamation-circle"></i> Busy </label>
+											<label class="control-label m-top-5 col-xs-12 pointer set_ave" style="color: gray;" data-toggle="modal" data-backdrop="static"  data-target="#set_availability" tabindex="-1"><i class="fa fa-minus-circle"></i> Leave </label>
+											<label class="control-label m-top-5 col-xs-12 pointer set_ave" style="color: purple;" data-toggle="modal" data-backdrop="static"  data-target="#set_availability" tabindex="-1"><i class="fa fa-times-circle"></i> Sick</label>
 
 											<p>&nbsp;</p>
 											<?php $f_availability = $this->users->fetch_user_future_availability($user_id_page); ?>
-											<?php if($f_availability->num_rows > 0): ?>
+											<?php if($f_availability->getNumRows() > 0): ?>
 												<p><strong><i class="fa fa-calendar-o" aria-hidden="true"></i> Future Availability</strong></p>
 												<ul>
-													<?php foreach ($f_availability->result_array() as $avail_data): ?>
+													<?php foreach ($f_availability->getResultArray() as $avail_data): ?>
 														<li>
 															<span> 
 																<strong class="pointer edit_f_ava" data-toggle="modal" data-target="#update_availability" id="<?php echo $avail_data['user_availability_id'].'_'.$avail_data['notes'].'_'.date('d/m/Y h:i A',$avail_data['date_time_stamp_a']).'_'.date('d/m/Y h:i A',$avail_data['date_time_stamp_b']); ?>">
@@ -1140,11 +1181,11 @@
 
 											<?php $rec_availability = $this->users->fetch_user_future_reocc_ava($user_id_page); ?>
 
-											<?php if($rec_availability->num_rows > 0): ?>
+											<?php if($rec_availability->getNumRows() > 0): ?>
 										
 												<p><strong><i class="fa fa-calendar-o" aria-hidden="true"></i> Reoccuring Availability</strong></p>
 												<ul>
-													<?php foreach ($rec_availability->result_array() as $avail_data): ?>
+													<?php foreach ($rec_availability->getResultArray() as $avail_data): ?>
 
 
 														
@@ -1208,7 +1249,7 @@
 
 
 							
-						<?php if( $this->session->userdata('users') > 1 || $this->session->userdata('user_id') == $user_id  || $this->session->userdata('is_admin') ==  1  ): ?>
+						<?php if( $this->session->get('users') > 1 || $this->session->get('user_id') == $user_id  || $this->session->get('is_admin') ==  1  ): ?>
 						<div class="panel-group" role="tablist">
 							<div class="panel panel-default">
 								<div class="panel-heading" role="tab" id="collapseListGroupHeading1">
@@ -1218,7 +1259,7 @@
 										</a>
 									</h4>
 								</div>
-								<?php if($this->session->userdata('is_admin') == 1 ): ?>
+								<?php if($this->session->get('is_admin') == 1 ): ?>
 									<div id="collapseListGroup1" class="panel-collapse collapse" role="tabpanel" aria-labelledby="collapseListGroupHeading1" aria-expanded="false" style="height: 0px;">
 									<?php else: ?>
 										<div id="collapseListGroup1" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="collapseListGroupHeading1" aria-expanded="false" style="height: auto;">
@@ -1226,7 +1267,7 @@
 
 										<div class="pad-10">
 										<?php /*	<form method="post" class="change_password_form" onkeypress="return event.keyCode != 13;">
-												<?php if($this->session->userdata('is_admin') == 1 ): ?>
+												<?php if($this->session->get('is_admin') == 1 ): ?>
 													<p>Current Password : <strong><?php echo $current_password; ?></strong></p>
 												<?php endif; ?>
 
@@ -1256,7 +1297,7 @@
 
 											<form method="post" class="change_password_form" onkeypress="return event.keyCode != 13;">
 
-												<?php if($this->session->userdata('is_admin') == 1 ): ?>
+												<?php if($this->session->get('is_admin') == 1 ): ?>
 													<p>Current Password : <strong><?php echo $current_password; ?></strong></p>
 												<?php endif; ?>				
 
@@ -1328,7 +1369,7 @@
 						<?php $company_project_set = $user_access_arr['15'];  ?>
 
 						
-						<?php if( ($this->session->userdata('users') > 1 ) || $this->session->userdata('is_admin') ==  1  ): ?>
+						<?php if( ($this->session->get('users') > 1 ) || $this->session->get('is_admin') ==  1  ): ?>
 
 
 
@@ -1351,7 +1392,7 @@
 											 
 
 
-												<form class="form-horizontal" role="form" method="post" action="<?php echo base_url(); ?>admin/primay_pa_pm">
+												<form class="form-horizontal" role="form" method="post" action="<?php echo base_url(); ?>/admin/primay_pa_pm">
 
 												<?php
 	  
@@ -1374,7 +1415,8 @@
 
 
 							$fetch_user = $this->user_model->fetch_user($pm->primary_user_id);
-							$pm_data = array_shift( $fetch_user->result() ); 
+							$get_res_pm = $fetch_user->getResult();
+							$pm_data = array_shift( $get_res_pm  ); 
 
 							echo '<p class="m-bottom-15">';
 
@@ -1468,14 +1510,14 @@
 										<?php endforeach; ?>
 									</select>
 
-									<?php $role = ($this->input->post('role') != '' ? $this->input->post('role') : ''); ?>
+									<?php $role = $_POST['role'] ?? null; ?>
 									<script type="text/javascript">$('.role').val('<?php echo $user->role_id.'|'.$user->role_types; ?>');</script>
 
 								</div>
 							</div>
 
 
-							<?php if( $this->session->userdata('is_admin') ==  1  ): ?>
+							<?php if( $this->session->get('is_admin') ==  1  ): ?>
 								<div class="col-xs-12 m-bottom-10 clearfix">
 									<label for="is_admin" class="col-sm-3 control-label m-top-5">Is Admin</label>
 									<div class="col-sm-9">
@@ -1795,7 +1837,7 @@
 											$("#show_plate_no").hide();
 										}
 
-										var baseurl = '<?php echo base_url() ?>';
+										var baseurl = '<?php echo base_url() ?>/';
 										$("#save_app_access").click(function(){
 											var x = document.getElementById("checkAll").checked;
 											var access = "";
@@ -2087,7 +2129,7 @@
 
 						<?php endif; ?>
 
-<?php if ($this->session->userdata('user_id') == $user_id): ?>
+<?php if ($this->session->get('user_id') == $user_id): ?>
 
 						<div class="box m-bottom-15">
 							<div class="box-head pad-5"> 
@@ -2281,7 +2323,7 @@ setTimeout(function(){
 
 
 
-						<form method="post" action="<?php echo base_url(); ?>users/update_menu_order" id="menu_list_form">
+						<form method="post" action="<?php echo base_url(); ?>/users/update_menu_order" id="menu_list_form">
 							<input type="hidden" name="menu_list_order" value="" id="menu_list_order">
 							<input type="hidden" name="user_id" value="<?php echo $user->user_id ?>">
 							
@@ -2589,8 +2631,8 @@ setTimeout(function(){
 						<?php endif; ?>
 						<!-- Site Staff end-->
 
-<?php if ($this->session->userdata('user_id') == $user_id): ?>
-						<?php if($user_role_id == 8 || $user_role_id == 3 || $user_role_id == 2 || $user_role_id == 20 || $user_role_id == 7 || $user_role_id ==  16 || $company_project_set ==  1   ||  $this->session->userdata('is_admin') == 1 ||  $user_role_id == 4 ): ?>
+<?php if ($this->session->get('user_id') == $user_id): ?>
+						<?php if($user_role_id == 8 || $user_role_id == 3 || $user_role_id == 2 || $user_role_id == 20 || $user_role_id == 7 || $user_role_id ==  16 || $company_project_set ==  1   ||  $this->session->get('is_admin') == 1 ||  $user_role_id == 4 ): ?>
 						<div class="box m-bottom-15">
 							<div class="box-head pad-5"> 
 								<label style="margin: 10px 0 0 10px;"><i class="fa fa-map-marker fa-lg"></i> See Personal Project First</label>
@@ -2626,10 +2668,11 @@ setTimeout(function(){
 		</div>
 	</div>
 </div>
-<?php $this->load->view('assets/logout-modal'); ?>
+
+<?php echo view('assets/logout-modal'); ?>
 
 <script type="text/javascript">
-	var baseurl = '<?php echo base_url() ?>'; //$("#base_url").val(); 
+	var baseurl = '<?php echo base_url() ?>/'; //$("#base_url").val(); 
 	
 
 	var app = new Vue({
@@ -3113,7 +3156,13 @@ $('.save_menu_arrange').click(function(){
 </script>
 
 <!-- _________________________________ HELP VIDEO SETUP _________________________________ -->
-<?php $this->load->module('help_videos'); ?>
+
+<?php 
+	use App\Modules\Help_videos\Controllers\Help_videos;
+	$this->help_videos = new Help_videos();
+?>
+
+
 <div id="help_video_group" class="modal fade" tabindex="-1" data-width="760" >
   <div class="modal-dialog" style="width:85%;">
     <div class="modal-content">
@@ -3127,7 +3176,7 @@ $('.save_menu_arrange').click(function(){
       <div class="modal-body" style="margin:0 !important; padding:0 !important;">
         <div class="tab-content">
           <div id="now_playing" class="tab-pane fade clearfix  in">
-            <iframe style="width: 100%;height: 70%;background-repeat: no-repeat;background-color:#000;background-image: url('<?php echo base_url(); ?>uploads/misc/loading_bub.gif');background-position: center;background-size: 50px;" class="group_video_frame" ></iframe>
+            <iframe style="width: 100%;height: 70%;background-repeat: no-repeat;background-color:#000;background-image: url('<?php echo base_url(); ?>/uploads/misc/loading_bub.gif');background-position: center;background-size: 50px;" class="group_video_frame" ></iframe>
           </div>
           <div id="help_videos" class="tab-pane fade clearfix active in">
             <div id="" class="m-10 p-bottom-10 clearfix">

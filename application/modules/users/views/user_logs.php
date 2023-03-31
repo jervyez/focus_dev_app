@@ -1,9 +1,9 @@
-<?php date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts ?>
-<?php $this->load->module('company'); ?>
-<?php $this->load->module('users'); ?>
+<?php use App\Modules\Users\Controllers\Users; ?>
+<?php $this->users = new Users(); ?>
+
 <?php 
-	if($this->session->userdata('is_admin') != 1 ){
-		redirect('', 'refresh');
+	if($this->session->get('is_admin') != 1 ){
+		return redirect()->to('/users');
 	}
 ?>
 
@@ -15,8 +15,8 @@
 
 			<div class="col-md-6 col-sm-4 col-xs-12 pull-left">
 				<header class="page-header">
-					<h3><?php $datestring = "%l, %F %d, %Y"; $time = time(); //use time() for timestamp  ?>
-						<?php echo $screen; ?> Screen<br><small><?php echo mdate($datestring, $time); #echo date("l, F d, Y"); ?></small>
+					<h3><?php $datestring = "l, F d, Y"; $time = time(); //use time() for timestamp  ?>
+						<?php echo $screen; ?> Screen<br><small><?php echo date($datestring, $time); #echo date("l, F d, Y"); ?></small>
 					</h3>
 				</header>
 			</div>
@@ -24,22 +24,19 @@
 			<div class="page-nav-options col-md-6 col-sm-8 col-xs-12 pull-right hidden-xs">
 				<ul class="nav nav-tabs navbar-right">
 					<li>
-						<a href="<?php echo base_url(); ?>"><i class="fa fa-home"></i> Home</a>
+						<a href="<?php echo site_url(); ?>"><i class="fa fa-home"></i> Home</a>
 					</li>
 					<li>
-						<a href="<?php echo base_url(); ?>admin" class="btn-small">Defaults</a>
+						<a href="<?php echo site_url(); ?>admin" class="btn-small">Defaults</a>
 					</li>
 					<li>
-						<a href="<?php echo base_url(); ?>admin/company" class="btn-small">Company</a>
+						<a href="<?php echo site_url(); ?>admin/company" class="btn-small">Company</a>
 					</li>
 					<li>
-						<a href="<?php echo base_url(); ?>users" class="btn-small">Users</a>
+						<a href="<?php echo site_url(); ?>users" class="btn-small">Users</a>
 					</li>
 					<li>
 						<a href="#" class="btn-small btn-primary" data-toggle="modal" data-target="#userlog_filter_modal">Filter Table</a>
-					</li>		
-					<li>
-						<a class="btn-small sb-open-right"><i class="fa fa-file-text-o"></i> Project Comments</a>
 					</li>
 				</ul>
 			</div>
@@ -54,7 +51,7 @@
 <div class="container-fluid">
 	<!-- Example row of columns -->
 	<div class="row">				
-		<?php $this->load->view('assets/sidebar'); ?>
+		<?php echo view('assets/sidebar'); ?>
 		<div class="section col-sm-12 col-md-11 col-lg-11">
 			<div class="container-fluid">
 
@@ -89,14 +86,14 @@
 								<table id="userLogsTble" class="table table-striped table-bordered" cellspacing="0" width="100%">
 								<thead><tr><th>Project Number</th><th>Action Type</th><th>Action</th><th>Date</th><th>Time</th><th>Full Name</th><th>th_raw</th><th>Project Name</th><th>Client</th></tr></thead>
 									<tbody>
-										<?php foreach ($user_logs->result() as $logs): ?>
+										<?php foreach ($user_logs->getResult() as $logs): ?>
 											<?php $date_raw = strtotime(str_replace('/', '-',$logs->date)); ?>
 
 											 
 <?php if($logs->project_id == '000000'){
 echo '<tr><td></td>';
 }else{
-echo '<tr><td><a href="'.base_url().'projects/view/'.$logs->project_id.'">'.$logs->project_id.'</a></td>';
+echo '<tr><td><a href="'.site_url().'projects/view/'.$logs->project_id.'">'.$logs->project_id.'</a></td>';
 } ?>
 
 <?php echo '<td>'.$logs->type.'</td><td>'.$logs->actions.'</td><td>'.$logs->date.'</td><td>'.$logs->time.'</td><td>'.$logs->user_first_name.' '.$logs->user_last_name.'</td><td>'.$date_raw.'</td><td>'.$logs->project_name.'</td><td>'.$logs->company_name.'</td></tr>'; ?>
@@ -120,7 +117,7 @@ echo '<tr><td><a href="'.base_url().'projects/view/'.$logs->project_id.'">'.$log
 </div>
 
 
-<?php $this->load->view('assets/logout-modal'); ?>
+<?php echo view('assets/logout-modal'); ?>
 
 
 <!-- Modal -->
@@ -159,7 +156,7 @@ echo '<tr><td><a href="'.base_url().'projects/view/'.$logs->project_id.'">'.$log
       		<div class="col-sm-7">
       			<select class="form-control user chosen" name="user" id="user">
       				<option value="">Select Name</option>
-      				<?php foreach ($users_q->result_array() as $user){
+      				<?php foreach ($users_q->getResultArray() as $user){
       					echo '<option value="'.$user['user_first_name'].' '.$user['user_last_name'].'">'.$user['user_first_name'].' '.$user['user_last_name'].'</option>';
       				}?>
       			</select>											

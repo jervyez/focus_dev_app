@@ -7,7 +7,7 @@
 	</thead>
 	<tbody>
 <?php
-foreach ($log_users_q->result_array() as $row){
+foreach ($log_users_q->getResultArray() as $row){
 ?>
 	<tr>
 		<td style = "width: 10px"><input type="radio" name = "sel_user_id" onClick = "select_user_id('<?php echo $row['user_id']; ?>')"></td>

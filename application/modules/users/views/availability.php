@@ -1,6 +1,14 @@
-<?php date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts ?>
-<?php $this->load->module('admin'); ?>
-<?php $this->load->module('bulletin_board'); ?>
+<?php //date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts ?>
+<?php
+	$this->session = \Config\Services::session();
+
+	use App\Modules\Admin\Models\Admin_m;
+	$this->admin_m = new Admin_m();
+
+	use App\Modules\Company\Models\Company_m;
+	$this->company_m = new Company_m();
+?>
+
 <?php $user_un_ave = array(); ?>
 <?php $time_diff = array(); ?>
 
@@ -29,7 +37,9 @@
  	<?php 
 $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
 
- 	$diff_time = $reoccur_ave['date_range_b'] - $current_date_time;
+	$date_range_b = $reoccur_ave['date_range_b'] ?? 0;
+
+ 	$diff_time = $date_range_b - $current_date_time;
 
  	if($diff_time > 0){
  		$time_diff[$user_init->primary_user_id] = $diff_time;
@@ -48,7 +58,7 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
 
 <?php
 	$all_focus_company_q = $this->admin_m->fetch_all_company_focus();
-	$all_focus_company = $all_focus_company_q->result();
+	$all_focus_company = $all_focus_company_q->getResult();
 ?>
 
 
@@ -57,13 +67,16 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
 
 <?php
 	$admin_company_details = $this->admin_m->fetch_single_company_focus($fcomp_data->company_id);
-	$data_comp = array_shift($admin_company_details->result_array() );
+	$admin_q_get_rs_arr = $admin_company_details->getResultArray();
+	$data_comp = array_shift( $admin_q_get_rs_arr );
 
 	$query_address= $this->company_m->fetch_complete_detail_address($data_comp['address_id']);
-	$temp_data = array_shift($query_address->result_array());
+	$query_address_q_get_rs_arr = $query_address->getResultArray();
+	$temp_data = array_shift($query_address_q_get_rs_arr);
 
 	$p_query_address = $this->company_m->fetch_complete_detail_address($data_comp['postal_address_id']);
-	$p_temp_data = array_shift($p_query_address->result_array());
+	$query_address_get_rs_arr = $p_query_address->getResultArray();
+	$p_temp_data = array_shift($query_address_get_rs_arr);
 
 	 $post_code[$fcomp_data->company_id] = $fcomp_data->area_code;
 
@@ -142,8 +155,8 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
 
 			<div class="col-md-6 col-sm-4 col-xs-12 pull-left">
 				<header class="page-header">
-					<h3><?php $datestring = "%l, %F %d, %Y"; $time = time(); //use time() for timestamp  ?>
-						<?php echo $screen; ?> Screen<br><small><?php echo mdate($datestring, $time); #echo date("l, F d, Y"); ?></small>
+					<h3><?php $datestring = "l, F d, Y"; $time = time(); //use time() for timestamp  ?>
+						<?php echo $screen; ?> Screen<br><small><?php echo date($datestring, $time); #echo date("l, F d, Y"); ?></small>
 					</h3>
 				</header>
 			</div>
@@ -153,23 +166,23 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
 					<li>
 						<a href="<?php echo base_url(); ?>"><i class="fa fa-home"></i> Home</a>
 					</li>
-					<?php if($this->session->userdata('users') > 0 || $this->session->userdata('is_admin') ==  1): ?>
+					<?php if($this->session->get('users') > 0 || $this->session->get('is_admin') ==  1): ?>
 						<li>
-							<a href="<?php echo base_url(); ?>users/account/<?php echo $this->session->userdata('user_id'); ?>"><i class="fa fa-cog"></i> My Account</a>
+							<a href="<?php echo base_url(); ?>/users/account/<?php echo $this->session->get('user_id'); ?>"><i class="fa fa-cog"></i> My Account</a>
 						</li>
 						<li>
-							<a href="<?php echo base_url(); ?>users"><i class="fa fa-users"></i> Users</a>
+							<a href="<?php echo base_url(); ?>/users"><i class="fa fa-users"></i> Users</a>
 						</li>
 					<?php endif; ?>
-					<?php if($this->session->userdata('is_admin') == 1 ): ?>
+					<?php if($this->session->get('is_admin') == 1 ): ?>
 						<li>
-							<a href="<?php echo base_url(); ?>admin" class="btn-small">Defaults</a>
+							<a href="<?php echo base_url(); ?>/admin" class="btn-small">Defaults</a>
 						</li>
 						<li>
-							<a href="<?php echo base_url(); ?>admin/company" class="btn-small">Company</a>
+							<a href="<?php echo base_url(); ?>/admin/company" class="btn-small">Company</a>
 						</li>
 						<li>
-							<a href="<?php echo base_url(); ?>users/user_logs">User Logs</a>
+							<a href="<?php echo base_url(); ?>/users/user_logs">User Logs</a>
 						</li>
 					<?php endif; ?>
 
@@ -189,7 +202,7 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
 <div class="container-fluid">
 	<!-- Example row of columns -->
 	<div class="row">				
-		<?php $this->load->view('assets/sidebar'); ?>
+		<?php echo view('assets/sidebar'); ?>
 		<div class="section col-sm-12 col-md-11 col-lg-11">
 			<div class="container-fluid basic">
 
@@ -226,12 +239,12 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
 							<div class="box-area clearfix">
 
 
-								<?php if(@$this->session->flashdata('new_focus_company')): ?>
+								<?php if(@$this->session->getFlashdata('new_focus_company')): ?>
 									<div class="no-pad-t m-bottom-10 pad-left-10">
 										<div class="border-less-box alert alert-success fade in">
 											<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 											<h4>Congratulations!</h4>
-											<?php echo $this->session->flashdata('new_focus_company');?>
+											<?php echo $this->session->getFlashdata('new_focus_company');?>
 										</div>
 									</div>
 								<?php endif; ?>
@@ -257,7 +270,8 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
 
 											<?php
 												$user_contact_q = $this->user_model->fetch_user($key);
-												$user_contact = array_shift($user_contact_q->result());
+												$get_result_contact = $user_contact_q->getResult();
+												$user_contact = array_shift($get_result_contact);
 
 											 ?>
 
@@ -272,7 +286,7 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
 																</div>
 															<?php else: ?>
 																<div style="float: left; overflow: hidden; height: 50px; ">
-																	<a href="<?php echo base_url('users/account/'.$key); ?>" ><img src="<?php echo base_url(); ?>uploads/users/<?php echo $user_un_ave_dta['user_profile_photo']; ?>" style="margin: 5px 5px; width: 50px;"></a>
+																	<a href="<?php echo base_url('/users/account/'.$key); ?>" ><img src="<?php echo base_url(); ?>/uploads/users/<?php echo $user_un_ave_dta['user_profile_photo']; ?>" style="margin: 5px 5px; width: 50px;"></a>
 																</div>
 															<?php endif; ?>
 															<p style="">
@@ -299,7 +313,7 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
 </span>
 																
 
-																<span class="name"><a href="<?php echo base_url('users/account/'.$key); ?>" ><?php echo $user_un_ave_dta['user_first_name']; ?></a><br /><span style="font-size: 14px;"><?php echo $user_un_ave_dta['user_last_name']; ?></span></span>
+																<span class="name"><a href="<?php echo base_url('/users/account/'.$key); ?>" ><?php echo $user_un_ave_dta['user_first_name']; ?></a><br /><span style="font-size: 14px;"><?php echo $user_un_ave_dta['user_last_name']; ?></span></span>
 
 
 
@@ -348,7 +362,7 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
  	<?php if($user->user_profile_photo == ''): ?>
 
  		<div class="text-center" style="float: left; overflow: hidden; height: 50px; padding-top:5px; ">
- 			&nbsp; &nbsp; <a class="user_link"  href="<?php echo base_url('users/account/'.$user->primary_user_id); ?>"><i class="fa fa-user fa-3x"></i></a>
+ 			&nbsp; &nbsp; <a class="user_link"  href="<?php echo base_url('/users/account/'.$user->primary_user_id); ?>"><i class="fa fa-user fa-3x"></i></a>
  		</div>
 
 
@@ -356,7 +370,7 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
  	<?php else: ?>
 
  		<div style="float: left; overflow: hidden; height: 50px; ">
- 			<a class="user_link"  href="<?php echo base_url('users/account/'.$user->primary_user_id); ?>"><img src="<?php echo base_url(); ?>uploads/users/<?php echo $user->user_profile_photo; ?>" style="margin: 5px 5px; width: 50px;"></a>
+ 			<a class="user_link"  href="<?php echo base_url('/users/account/'.$user->primary_user_id); ?>"><img src="<?php echo base_url(); ?>/uploads/users/<?php echo $user->user_profile_photo; ?>" style="margin: 5px 5px; width: 50px;"></a>
  		</div>
  	<?php endif; ?>
 
@@ -374,7 +388,8 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
 
 	<?php
  		$user_contact_q = $this->user_model->fetch_user($user->primary_user_id);
- 		$user_contact = array_shift($user_contact_q->result());
+ 		$user_contact_res_arr = $user_contact_q->getResult();
+ 		$user_contact = array_shift($user_contact_res_arr);
 
  		?>
 
@@ -400,7 +415,7 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
  	
 
 
-																<span class="name"><a href="<?php echo base_url('users/account/'.$user->primary_user_id); ?>" ><?php  echo $user->user_first_name; ?></a><br /><span style="font-size: 14px;"><?php   echo $user->user_last_name;  ?></span></span>
+																<span class="name"><a href="<?php echo base_url('/users/account/'.$user->primary_user_id); ?>" ><?php  echo $user->user_first_name; ?></a><br /><span style="font-size: 14px;"><?php   echo $user->user_last_name;  ?></span></span>
 
  
 
@@ -480,8 +495,10 @@ $reoccur_ave = $this->users->get_user_reoccur_ave($user_init->primary_user_id);
 
 </style>
 
-
-
-
+<?php 
+	use App\Modules\Bulletin_board\Controllers\Bulletin_board;
+	$this->bulletin_board = new Bulletin_board();
+?>
+<?php //review_code ?>
 <?php $this->bulletin_board->list_latest_post(); ?>
-<?php $this->load->view('assets/logout-modal'); ?>
+<?php echo view('assets/logout-modal'); ?>

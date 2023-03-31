@@ -1,9 +1,18 @@
+<?php $this->session = \Config\Services::session(); ?>
+
+<?php 
+
+
+use App\Modules\Users\Controllers\Users;
+$this->users = new Users();
+
+
+ ?>
 <?php date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts ?>
-<?php $this->load->module('bulletin_board'); ?>
 <?php $color_group = array('000','4DAB4D','935FA6','795548','00ADEF','F779B5','F7901E','4DAB4D','935FA6','795548'); ?>
 
 <?php $color_group['3197'] = '4caf50'; ?>
-<?php $leave_requests = $this->session->userdata('leave_requests'); ?>
+<?php $leave_requests = $this->session->get('leave_requests'); ?>
  <!-- title bar -->
 <div class="container-fluid head-control">
 	<div class="container-fluid">
@@ -11,8 +20,8 @@
 
 			<div class="col-md-6 col-sm-4 col-xs-12 pull-left">
 				<header class="page-header">
-					<h3><?php $datestring = "%l, %F %d, %Y"; $time = time(); //use time() for timestamp  ?>
-						<?php echo $screen; ?> Screen<br><small><?php echo mdate($datestring, $time); #echo date("l, F d, Y"); ?></small>
+					<h3><?php $datestring = "l, F d, Y"; $time = time(); //use time() for timestamp  ?>
+						<?php echo $screen; ?> Screen<br><small><?php echo date($datestring, $time); #echo date("l, F d, Y"); ?></small>
 					</h3>
 				</header>
 			</div>
@@ -22,28 +31,28 @@
 					<li>
 						<a href="<?php echo base_url(); ?>"><i class="fa fa-home"></i> Home</a>
 					</li>
-					<?php if($this->session->userdata('users') > 0 || $this->session->userdata('is_admin') ==  1): ?>
+					<?php if($this->session->get('users') > 0 || $this->session->get('is_admin') ==  1): ?>
 						<li>
-							<a href="<?php echo base_url(); ?>users/account/<?php echo $this->session->userdata('user_id'); ?>"><i class="fa fa-cog"></i> My Account</a>
+							<a href="<?php echo base_url(); ?>/users/account/<?php echo $this->session->get('user_id'); ?>"><i class="fa fa-cog"></i> My Account</a>
 						</li>
 					<?php endif; ?>
-					<?php if($this->session->userdata('is_admin') == 1 ): ?>
+					<?php if($this->session->get('is_admin') == 1 ): ?>
 						<li>
-							<a href="<?php echo base_url(); ?>admin" class="btn-small">Defaults</a>
+							<a href="<?php echo base_url(); ?>/admin" class="btn-small">Defaults</a>
 						</li>
 						<li>
-							<a href="<?php echo base_url(); ?>admin/company" class="btn-small">Company</a>
+							<a href="<?php echo base_url(); ?>/admin/company" class="btn-small">Company</a>
 						</li>
 						<li>
-							<a href="<?php echo base_url(); ?>users/user_logs">User Logs</a>
+							<a href="<?php echo base_url(); ?>/users/user_logs">User Logs</a>
 						</li>
 					<?php endif; ?>
 						<li>
-							<a href="<?php echo base_url(); ?>users/leave_details/<?php echo $this->session->userdata('user_id'); ?>">My Leave Requests</a>
+							<a href="<?php echo base_url(); ?>/users/leave_details/<?php echo $this->session->get('user_id'); ?>">My Leave Requests</a>
 						</li>
 					<?php if ($leave_requests == 1): ?>
 						<li>
-							<a href="<?php echo base_url(); ?>users/leave_approvals/<?php echo $this->session->userdata('user_id'); ?>">Leave Approvals</a>
+							<a href="<?php echo base_url(); ?>/users/leave_approvals/<?php echo $this->session->get('user_id'); ?>">Leave Approvals</a>
 						</li>
 					<?php endif; ?>
 					<!-- <li>
@@ -59,8 +68,8 @@
 
 <div class="container-fluid">
 	<!-- Example row of columns -->
-	<div class="row">				
-		<?php $this->load->view('assets/sidebar'); ?>
+	<div class="row">
+		<?php echo view('assets/sidebar'); ?>
 		<div class="section col-sm-12 col-md-11 col-lg-11">
 			<div class="container-fluid basic">
 
@@ -78,12 +87,12 @@
 							<div class="  clearfix">
 
 
-								<?php if(@$this->session->flashdata('new_focus_company')): ?>
+								<?php if(@$this->session->getFlashdata('new_focus_company')): ?>
 									<div class="no-pad-t m-bottom-10 pad-left-10">
 										<div class="border-less-box alert alert-success fade in">
 											<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 											<h4>Congratulations!</h4>
-											<?php echo $this->session->flashdata('new_focus_company');?>
+											<?php echo $this->session->getFlashdata('new_focus_company');?>
 										</div>
 									</div>
 								<?php endif; ?>
@@ -385,7 +394,7 @@ var btn_click_counter = 0;
         frameDoc.document.write('<html><head><title>Responsibility Matrix</title>');
         frameDoc.document.write('</head><body>');
         //Append the external CSS file.
-        frameDoc.document.write('<link href="<?php echo base_url(); ?>css/print.css" rel="stylesheet" type="text/css" />');
+        frameDoc.document.write('<link href="<?php echo base_url(); ?>/css/print.css" rel="stylesheet" type="text/css" />');
         //Append the DIV contents.
         frameDoc.document.write('<h1 style="font-size:20px;">Responsibility Matrix</h1><hr style="background-color: #000; border-color: #000; "/><br />');
         frameDoc.document.write(contents);
@@ -402,6 +411,11 @@ var btn_click_counter = 0;
 	
 </script>
  
-
+<?php //review_code ?>
+<?php 
+	use App\Modules\Bulletin_board\Controllers\Bulletin_board;
+	$this->bulletin_board = new Bulletin_board();
+?>
+<?php //review_code ?>
 <?php $this->bulletin_board->list_latest_post(); ?>
-<?php $this->load->view('assets/logout-modal'); ?>
+<?php echo view('assets/logout-modal'); ?>

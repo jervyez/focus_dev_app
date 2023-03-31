@@ -1,5 +1,14 @@
-<?php date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts ?>
-<?php $this->load->module('company'); ?>
+<?php //date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts ?>
+<?php // $this->load->module('company'); ?>
+
+<?php 
+$this->session = \Config\Services::session();
+
+use App\Modules\Company\Controllers\Company;
+$this->company = new Company();
+
+
+?>
 
 <!-- title bar -->
 <div class="container-fluid head-control">
@@ -8,8 +17,8 @@
 
 			<div class="col-md-6 col-sm-4 col-xs-12 pull-left">
 				<header class="page-header">
-					<h3><?php $datestring = "%l, %F %d, %Y"; $time = time(); //use time() for timestamp  ?>
-						<?php echo $screen; ?> Screen<br><small><?php echo mdate($datestring, $time); #echo date("l, F d, Y"); ?></small>
+					<h3><?php $datestring = "l, F d, Y"; $time = time(); //use time() for timestamp  ?>
+						<?php echo $screen; ?> Screen<br><small><?php echo date($datestring, $time); #echo date("l, F d, Y"); ?></small>
 					</h3>
 				</header>
 			</div>
@@ -20,13 +29,13 @@
 						<a href="<?php echo base_url(); ?>"><i class="fa fa-home"></i> Home</a>
 					</li>
 					<li>
-						<a href="<?php echo base_url(); ?>admin" class="btn-small">Defaults</a>
+						<a href="<?php echo base_url(); ?>/admin" class="btn-small">Defaults</a>
 					</li>
 					<li>
-						<a href="<?php echo base_url(); ?>admin/company" class="btn-small">Company</a>
+						<a href="<?php echo base_url(); ?>/admin/company" class="btn-small">Company</a>
 					</li>
 					<li>
-						<a href="<?php echo base_url(); ?>users" class="btn-small">Users</a>
+						<a href="<?php echo base_url(); ?>/users" class="btn-small">Users</a>
 					</li>
 				</ul>
 			</div>
@@ -41,7 +50,7 @@
 <div class="container-fluid">
 	<!-- Example row of columns -->
 	<div class="row">				
-		<?php $this->load->view('assets/sidebar'); ?>
+		<?php echo view('assets/sidebar'); ?>
 		<div class="section col-sm-12 col-md-11 col-lg-11">
 			<div class="container-fluid">
 
@@ -126,7 +135,7 @@
 
 											<div class="col-xs-12 m-bottom-10 clearfix">
 												<div class="primary_photo_wraper pad-top-5">
-													<img src="<?php echo base_url(); ?>uploads/users/no-avatar.jpg" class="user_avatar img-responsive img-thumbnail">													
+													<img src="<?php echo base_url(); ?>/uploads/users/no-avatar.jpg" class="user_avatar img-responsive img-thumbnail">													
 												</div>												
 											</div>
 
@@ -147,23 +156,34 @@
 												<label><i class="fa fa-user fa-lg"></i> Peronal Info</label>
 											</div>
 
+											<?php /*if($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
+												
+													<?php // var_dump( $validation->getErrors() ); ?>
+
+
+													<?= $validation->getError('first_name') ?>
+
+
+													 
+												<?php endif; */?>
+
 											<div class="box-area pad-5 clearfix">
-												<div class="col-xs-12 m-bottom-10 clearfix <?php if(form_error('first_name')){ echo 'has-error has-feedback';} ?>">
-													<input type="text" class="form-control" id="first_name" name="first_name"  tabindex="1" placeholder="First Name*"  value="<?php echo $this->input->post('first_name'); ?>">													
+												<div class="col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('first_name') ? 'has-error has-feedback' : '';  ?>">
+													<input type="text" class="form-control" id="first_name" name="first_name"  tabindex="1" placeholder="First Name*"  value="<?= $_POST['first_name'] ?? null; ?>">													
 												</div>
 
-												<div class="col-xs-12 m-bottom-10 clearfix <?php if(form_error('last_name')){ echo 'has-error has-feedback';} ?>">													
-														<input type="text" class="form-control" id="last_name" name="last_name"  tabindex="2" placeholder="Last Name*"  value="<?php echo $this->input->post('last_name'); ?>">												
+												<div class="col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('last_name') ? 'has-error has-feedback' : '';  ?>">													
+														<input type="text" class="form-control" id="last_name" name="last_name"  tabindex="2" placeholder="Last Name*"  value="<?= $_POST['last_name'] ?? null; ?>">												
 												</div>
 
-												<div class="col-xs-12 m-bottom-10 clearfix <?php if(form_error('gender')){ echo 'has-error has-feedback';} ?>">													
+												<div class="col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('gender') ?? 'has-error has-feedback';  ?>">													
 													<select name="gender" class="form-control gender" tabindex="3" id="gender"><option value="Male">Male</option><option value="Female">Female</option></select>
-													<?php $gender = ($this->input->post('gender') != '' ? $this->input->post('gender') : 'Male'); ?>
+													<?php $gender = $_POST['gender'] ?? 'Male'; ?>
 													<script type="text/javascript">$('.gender').val('<?php echo $gender; ?>');</script>													
 												</div>
 
 												<div class="col-xs-12 m-bottom-10 clearfix">													
-													<input type="text" data-date-format="dd/mm/yyyy" placeholder="Date of Birth" class="form-control datepicker" id="dob" name="dob" tabindex="4" value="<?php echo $this->input->post('dob'); ?>">												
+													<input type="text" data-date-format="dd/mm/yyyy" placeholder="Date of Birth" class="form-control datepicker" id="dob" name="dob" tabindex="4" value="<?= $_POST['dob'] ?? null; ?>">												
 												</div>
 											</div>
 										</div>
@@ -177,6 +197,20 @@
 
 							<div class="col-md-10 col-sm-10 col-xs-12">
 
+
+	<?php if(isset($form_error)): ?>
+	<div class=" ">
+		<div class=" ">
+			<div class="">
+				<div class="border-less-box alert alert-danger fade in">
+					<button type="button" class="close" data-dismiss="alert" aria-hidden="true"> × </button>
+					<?php echo $form_error; ?>
+				</div>
+			</div>
+		</div>
+	</div>
+	<?php endif; ?>
+
       								
 
 
@@ -185,21 +219,26 @@
 										<div class="box-head pad-5 m-bottom-5">
 											<label><i class="fa fa-suitcase fa-lg"></i> Account Details</label>
 
-											<div class="pull-right  clearfix <?php if(form_error('password')){ echo 'has-error has-feedback';} ?>">
-												 
-													<div class="m-top-5 m-right-5 ">
-														<p>Temporary Password: <strong><?php echo $static_defaults[0]->temp_user_psswrd; ?></strong></p>
-														</div>
-													</div>
+
+
+
+											<div class="pull-right  clearfix">												
+												<div class="m-top-5 m-right-5 ">
+													<p>Temporary Password: <strong><?php echo $static_defaults[0]->temp_user_psswrd; ?></strong></p>
+												</div>
+											</div>
 
 
 										</div>
 										
 										<div class="box-area pad-5 clearfix">
+
+
+
 											
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('focus')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('focus') ? 'has-error has-feedback' : '';  ?>">
 												<label for="focus" class="col-sm-3 control-label">Focus*</label>
-												<div class="col-sm-9">
+												<div class="col-sm-9 <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('focus') ? 'has-error has-feedback' : '';  ?>">
 													<select name="focus" class="form-control focus" id="focus" tabindex="5">
 														<option value="">Select Focus Company</option>
 														<?php foreach ($focus as $key => $value): ?>
@@ -207,19 +246,19 @@
 														<?php endforeach; ?>
 													</select>
 
-													<?php $focus = ($this->input->post('focus') != '' ? $this->input->post('focus') : ''); ?>
+													<?php $focus = $_POST['focus'] ?? null; ?>
 													<script type="text/javascript">$('.focus').val('<?php echo $focus; ?>');</script>
 												</div>
 											</div>
 
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('login_name')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('login_name') ? 'has-error has-feedback' : '';  ?>">
 												<label for="login_name" class="col-sm-4 control-label">Login Name*</label>
 												<div class="col-sm-8">
-													<input type="text" class="form-control" id="login_name" name="login_name"  tabindex="8" placeholder="Login Name"  value="<?php echo $this->input->post('login_name'); ?>" style="text-transform: none;" >
+													<input type="text" class="form-control" id="login_name" name="login_name"  tabindex="8" placeholder="Login Name"  value="<?= $_POST['login_name'] ?? null; ?>" style="text-transform: none;" >
 												</div>
 											</div>
 
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('department')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('department') ? 'has-error has-feedback' : '';  ?>">
 												<label for="department" class="col-sm-4 control-label">Department*</label>
 												<div class="col-sm-8">
 													<select name="department" class="form-control department" id="department"  tabindex="6">
@@ -229,13 +268,13 @@
 														<?php endforeach; ?>
 													</select>
 
-													<?php $department = ($this->input->post('department') != '' ? $this->input->post('department') : ''); ?>
+													<?php $department = $_POST['department'] ?? null; ?>
 													<script type="text/javascript">$('.department').val('<?php echo $department; ?>');</script>
 												</div>
 											</div>
 
 											
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix hide <?php if(form_error('password')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix hide <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('password') ? 'has-error has-feedback' : '';  ?>">
 												<label for="password" class="col-sm-3 control-label">Password*</label>
 												<div class="col-sm-9">
 													<input type="password" class="form-control" id="password" name="password"  tabindex="9" placeholder="Password"  value="<?php echo $static_defaults[0]->temp_user_psswrd; ?>">
@@ -243,7 +282,7 @@
 												</div>
 											</div>
 											
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('role')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('role') ?'has-error has-feedback' : '';  ?>">
 												<label for="role" class="col-sm-3 control-label">Role*</label>
 												<div class="col-sm-9">
 													<select name="role" class="form-control role user-role-selection" id="role"  tabindex="7">
@@ -253,21 +292,21 @@
 														<?php endforeach; ?>
 													</select>
 
-													<?php if($this->input->post('role') != ''): ?>
-														<?php $role = ($this->input->post('role') != '' ? $this->input->post('role') : ''); ?>
-														<script type="text/javascript">$('.role').val('<?php echo $role; ?>');</script>
-													<?php endif; ?>
+
+													<?php $role = $_POST['role'] ?? null; ?>
+													<script type="text/javascript">$('.role').val('<?php echo $role; ?>');</script>
+													
 												</div>
 											</div>
 											
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix hide <?php if(form_error('confirm_password')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix hide <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('confirm_password') ?'has-error has-feedback' : '';  ?>">
 												<label for="confirm_password" class="col-sm-5 control-label">Confirm Password*</label>
 												<div class="col-sm-7">
 													<input type="password" class="form-control" id="confirm_password" name="confirm_password"  tabindex="10" placeholder="Confirm Password"  value="<?php echo $static_defaults[0]->temp_user_psswrd; ?>">
 												</div>
 											</div>
 
-											<div class="col-md-6 col-sm-4 col-xs-12 clearfix m-bottom-10  <?php if(form_error('super_visor')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-4 col-xs-12 clearfix m-bottom-10 <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('super_visor') ?'has-error has-feedback' : '';  ?>">
 												<label for="super_visor" class="col-sm-4 control-label">Direct Reports*</label>
 												<div class="col-sm-8">
 													<select name="super_visor" class="form-control super_visor" id="super_visor" >
@@ -277,12 +316,12 @@
 														<?php endforeach; ?>
 													</select>
 
-													<?php $super_visor = ($this->input->post('super_visor') != '' ? $this->input->post('super_visor') : ''); ?>
+													<?php $super_visor = $_POST['super_visor'] ?? null; ?>
 													<script type="text/javascript">$('.super_visor').val('<?php echo $super_visor; ?>');</script>
 												</div>
 											</div>
 
-											<div class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix <?php if(form_error('is_offshore')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('is_offshore') ?'has-error has-feedback' : '';  ?>">
 												<label for="is_offshore" class="col-sm-4 control-label">Offshore Employee*</label>
 												<div class="col-sm-8">
 													<select name="is_offshore" class="form-control is_offshore" tabindex="3" id="is_offshore">
@@ -291,13 +330,13 @@
 														<option value="1">Yes</option>
 														
 													</select>
-													<?php if(isset($user->is_offshore)): ?>
-														<script type="text/javascript">$('.is_offshore').val('<?php echo $user->is_offshore; ?>');</script>
-													<?php endif; ?>
+													<?php $is_offshore = $_POST['is_offshore'] ?? null; ?>
+													<script type="text/javascript">$('.is_offshore').val('<?php echo $is_offshore; ?>');</script>
+													
 												</div>
 											</div>
 
-											<div id="" class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix <?php if(form_error('contractor_employee')){ echo 'has-error has-feedback';} ?>">
+											<div id="" class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('contractor_employee') ? 'has-error has-feedback' : '';  ?>">
 												<label for="contractor_employee" class="col-sm-4 control-label">Contractor Employee*</label>
 												<div class="col-sm-8">
 													<select name="contractor_employee" class="form-control contractor_employee" id="contractor_employee" >
@@ -306,12 +345,12 @@
 														<option value="1">Yes</option>
 													</select>
 
-													<?php $contractor_employee = ($this->input->post('contractor_employee') != '' ? $this->input->post('contractor_employee') : ''); ?>
+													<?php $contractor_employee = $_POST['contractor_employee'] ?? null; ?>
 													<script type="text/javascript">$('.contractor_employee').val('<?php echo $contractor_employee; ?>');</script>
 												</div> 
 											</div>
 
-											<div class="div_pm_for_pa col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('pm_for_pa')){ echo 'has-error has-feedback';} ?>" style="display:none;">
+											<div class="div_pm_for_pa col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('pm_for_pa') ?'has-error has-feedback' : '';  ?>" style="display:none;">
 												<label for="pm_for_pa" class="col-sm-3 control-label">Primary PM*</label>
 												<div class="col-sm-9">
 													<select name="pm_for_pa" class="form-control pm_for_pa " id="pm_for_pa" >
@@ -324,19 +363,19 @@
 													</select>
 
 
-													<?php if($this->input->post('pm_for_pa') != ''): ?>														
-														<?php $pm_for_pa = ($this->input->post('pm_for_pa') != '' ? $this->input->post('pm_for_pa') : ''); ?>
+													<?php if( $_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['pm_for_pa'] !== null ): ?>														
+														<?php $pm_for_pa = $_POST['pm_for_pa'] ?? null; ?>
 														<script type="text/javascript">$('select.pm_for_pa').val('<?php echo $pm_for_pa; ?>'); $('.div_pm_for_pa').show(); </script>
 													<?php endif; ?>
 
-													<?php if(form_error('pm_for_pa')): ?>
+													<?php if( $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('pm_for_pa') ): ?>
 														<script type="text/javascript">  $('.div_pm_for_pa').show(); </script>
 													<?php endif; ?>
 
 												</div>
 											</div>
 
-											<div class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix <?php if(form_error('is_dummy')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-4 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('is_dummy') ?'has-error has-feedback' : '';  ?>">
 												<label for="is_dummy" class="col-sm-4 control-label">Dummy Account*</label>
 												<div class="col-sm-8">
 													<select name="is_dummy" class="form-control is_dummy" tabindex="3" id="is_dummy">
@@ -345,9 +384,9 @@
 														<option value="1">Yes</option>
 														
 													</select>
-													<?php if(isset($user->is_dummy)): ?>
-														<script type="text/javascript">$('.is_dummy').val('<?php echo $user->is_dummy; ?>');</script>
-													<?php endif; ?>
+													<?php $is_dummy = $_POST['is_dummy'] ?? null; ?>
+													<script type="text/javascript">$('.is_dummy').val('<?php echo $is_dummy; ?>');</script>
+													
 												</div>
 											</div>
 
@@ -364,24 +403,24 @@
 										
 										<div class="box-area pad-5 clearfix">
 
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('direct_landline')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('direct_landline') ? 'has-error has-feedback' : '';  ?>">
 												<label for="direct_landline" class="col-sm-4 control-label">Direct Landline*</label>
 												<div class="col-sm-8">
-													<input type="text" class="form-control direct_landline" id="direct_landline" name="direct_landline" onchange="contact_number_assign2('direct_landline')" tabindex="11" placeholder="Direct Landline"  value="<?php echo $this->input->post('direct_landline'); ?>">																										
+													<input type="text" class="form-control direct_landline" id="direct_landline" name="direct_landline" onchange="contact_number_assign2('direct_landline')" tabindex="11" placeholder="Direct Landline"  value="<?= $_POST['direct_landline'] ?? null;   ?>">																										
 												</div>
 											</div>
 
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('after_hours')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix">
 												<label for="after_hours" class="col-sm-3 control-label">After Hours</label>
 												<div class="col-sm-9">
-													<input type="text" class="form-control after_hours" id="after_hours" name="after_hours" onchange="contact_number_assign2('after_hours')" tabindex="12" placeholder="After Hours"  value="<?php echo $this->input->post('after_hours'); ?>">																										
+													<input type="text" class="form-control after_hours" id="after_hours" name="after_hours" onchange="contact_number_assign2('after_hours')" tabindex="12" placeholder="After Hours"  value="<?= $_POST['after_hours'] ?? null;   ?>">																										
 												</div>
 											</div>
 											
 											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix">
 												<label for="mobile_number" class="col-sm-4 control-label">Mobile Number</label>
 												<div class="col-sm-8">
-													<input type="text" class="form-control mobile_number" id="mobile_number" name="mobile_number" placeholder="Mobile Number" onchange="mobile_number_assign_user2('mobile_number')"  tabindex="13" value="<?php echo $this->input->post('mobile_number'); ?>">
+													<input type="text" class="form-control mobile_number" id="mobile_number" name="mobile_number" placeholder="Mobile Number" onchange="mobile_number_assign_user2('mobile_number')"  tabindex="13" value="<?= $_POST['mobile_number'] ?? null;   ?>">
 												</div>
 											</div>
 
@@ -391,40 +430,40 @@
 
 													<div class="input-group ">
 														<span class="input-group-addon">+</span>
-														<input type="text" class="form-control personal_mobile_number" id="personal_mobile_number" name="personal_mobile_number" placeholder="Personal Mobile Number" onchange="//mobile_number_assign('mobile_number')"  tabindex="13" value="<?php echo $this->input->post('personal_mobile_number'); ?>">
+														<input type="text" class="form-control personal_mobile_number" id="personal_mobile_number" name="personal_mobile_number" placeholder="Personal Mobile Number" onchange="//mobile_number_assign('mobile_number')"  tabindex="13" value="<?= $_POST['personal_mobile_number'] ?? null;   ?>">
 													</div>
 												</div>
 											</div>
 
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('email')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('email') ? 'has-error has-feedback' : '';  ?>">
 												<label for="email" class="col-sm-3 control-label">Email*</label>
 												<div class="col-sm-9">
-													<input type="email" class="form-control" id="email" name="email"  tabindex="14" placeholder="Email"  value="<?php echo $this->input->post('email'); ?>">
+													<input type="email" class="form-control" id="email" name="email"  tabindex="14" placeholder="Email"  value="<?= $_POST['email'] ?? null; ?>">
 												</div>
 											</div>
 
 											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix">
 												<label for="personal_email" class="col-sm-4 control-label">Personal Email</label>
 												<div class="col-sm-8">
-													<input type="email" class="form-control" id="personal_email" name="personal_email" placeholder="personal email" tabindex="14" placeholder=""  value="<?php echo $this->input->post('personal_email'); ?>">
+													<input type="email" class="form-control" id="personal_email" name="personal_email" placeholder="personal email" tabindex="14" placeholder=""  value="<?= $_POST['personal_email'] ?? null; ?>">
 												</div>
 												<!-- <input type="hidden" name="email_id" value="<?php //echo $user->email_id; ?>"> -->
 											</div>
 
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('skype_id')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('skype_id') ? 'has-error has-feedback' : '';  ?>">
 												<label for="skype_id" class="col-sm-3 control-label">Skype ID*</label>
 												<div class="col-sm-9">
-													<input type="text" class="form-control" id="skype_id" name="skype_id"  tabindex="15" placeholder="Skype ID"  value="<?php echo $this->input->post('skype_id'); ?>" style="text-transform: none;">
+													<input type="text" class="form-control" id="skype_id" name="skype_id"  tabindex="15" placeholder="Skype ID"  value="<?= $_POST['skype_id'] ?? null; ?>" style="text-transform: none;">
 												</div>
 											</div>
 
 
-											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?php if(form_error('skype_password')){ echo 'has-error has-feedback';} ?>">
+											<div class="col-md-6 col-sm-6 col-xs-12 m-bottom-10 clearfix <?= $_SERVER['REQUEST_METHOD'] === 'POST' && $validation->hasError('skype_password') ? 'has-error has-feedback' : ''; ?>">
 												<label for="skype_password" class="col-sm-4 control-label">Skype Password</label>
 												<div class="col-sm-8">													
 													<div class="input-group ">
 														<span class="input-group-addon"><i class="fa fa-skype fa-lg"></i></span>
-														<input type="text" class="form-control" id="skype_password" name="skype_password"  tabindex="15" placeholder="Skype Password"  value="<?php echo $this->input->post('skype_password'); ?>" style="text-transform: none;">
+														<input type="text" class="form-control" id="skype_password" name="skype_password"  tabindex="15" placeholder="Skype Password"  value="<?= $_POST['skype_password'] ?? null; ?>" style="text-transform: none;">
 													</div>
 												</div>
 											</div>
@@ -448,7 +487,7 @@
 										<div class="box-area pad-5 clearfix">
 											<div class="clearfix">												
 												<div class="">
-													<textarea class="form-control" id="comments" rows="5"  tabindex="16" name="comments"><?php echo $this->input->post('comments'); ?></textarea>
+													<textarea class="form-control" id="comments" rows="5"  tabindex="16" name="comments"><?= $_POST['comments'] ?? null; ?></textarea>
 												</div>
 											</div>
 										</div>
@@ -497,7 +536,7 @@
 								<label><i class="fa fa-unlock-alt fa-lg"></i> Select Access</label>
 							</div>		
 
-							<?php if($this->session->userdata('is_admin') ==  1): ?>				
+							<?php if($this->session->get('is_admin') ==  1): ?>				
 
 							<?php $is_admin_set = (isset($_POST['chk_is_admin']) && $_POST['chk_is_admin'] == 1 ? 1 : 0);  ?>
 
@@ -693,6 +732,12 @@
 	</div>
 </div>
 
+<style type="text/css">
+	.has-error .form-control {
+		color: #a94442 !important;
+	}
+</style>
+
 <script type="text/javascript">
 	
 
@@ -712,5 +757,5 @@
 
 </script>
 
-<?php $this->load->view('assets/logout-modal'); ?>
+<?php echo view('assets/logout-modal'); ?>
 <?php if(!isset($_POST['is_form_submit'])){	echo '<script type="text/javascript">$("#first_name").focus();</script>';}?>
