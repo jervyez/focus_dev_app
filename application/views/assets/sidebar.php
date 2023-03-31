@@ -142,8 +142,8 @@
 
 <?php if($this->session->get('user_id')): ?>
 	<?php $left_nav_order = $this->users->get_user_nav_order( $this->session->get('user_id') ?? null  ); ?>
-	<?php if(is_null($left_nav_order)): $left_nav_order = ""; endif; ?>
 	<?php $ordered_menu = explode(',',$left_nav_order);  // var_dump($left_nav_order);    ?>
+
 	<script type="text/javascript">
 		<?php foreach ($ordered_menu as $key => $value): ?>
 			var menu_link = $('#nav_<?php echo $value;  ?>').clone();
