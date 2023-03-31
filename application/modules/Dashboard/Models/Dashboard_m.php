@@ -214,7 +214,7 @@ WHERE `leave_request`.`is_approve` = '1'
             LEFT JOIN `company_details` ON `company_details`.`company_id` = `revenue_forecast_individual`.`comp_id`
             LEFT JOIN `users` ON `users`.`user_id` = `revenue_forecast_individual`.`pm_id`
             WHERE `revenue_forecast_individual`.`revenue_forecast_id` = '$revenue_forecast_id'
-            ORDER BY `revenue_forecast_individual`.`revenue_forecast_individual_id`  ASC");
+            ORDER BY `revenue_forecast_individual`.`comp_id` ASC");
         return $query;
     }
 

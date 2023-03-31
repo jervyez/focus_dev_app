@@ -412,11 +412,11 @@ $(document).ready(function(){
 	// }
 	
 
-	// if($this->invoice->if_has_invoice($project_id) == 0): 
-	// 	$prog_payment_stat = 0;
-	// else:
-	// 	$prog_payment_stat = 1;
-	// endif;
+	if($this->invoice->if_has_invoice($project_id) == 0): 
+		$prog_payment_stat = 0;
+	else:
+		$prog_payment_stat = 1;
+	endif;
 
 	if($shopping_center_brand_name == ''){
 		$shopping_center_brand_name = $shopping_common_name;
@@ -809,13 +809,13 @@ $filtered_date = $induction_commencement_date;
 													<i class="fa fa-bar-chart-o fa-lg"></i> Reports <span class="caret"></span>
 												</a>
 												<ul class="dropdown-menu" role="menu">
-													<li><a href="<?php echo site_url(); ?>works/proj_summary_w_cost/<?php echo $project_id ?>" target="_blank" onclick = "generateReports('pswc')"><i class="fa fa-file-pdf-o"></i> Project Summary with Cost</a></li>
-													<li><a href="<?php echo site_url(); ?>works/proj_summary_wo_cost/<?php echo $project_id ?>" target="_blank" onclick = "generateReports('pswoc')"><i class="fa fa-file-pdf-o"></i> Project Summary without Cost</a></li>
-													<li><a href="<?php echo site_url(); ?>works/proj_joinery_summary_w_cost/<?php echo $project_id ?>" target="_blank" onclick = "generateReports('jswc')"><i class="fa fa-file-pdf-o"></i> Joinery Summary with Cost</a></li>
-													<li><a href="<?php echo site_url(); ?>works/proj_joinery_summary_wo_cost/<?php echo $project_id ?>" target="_blank" onclick = "generateReports('jswoc')"><i class="fa fa-file-pdf-o"></i> Joinery Summary without Cost</a></li>
+													<li><a href="<?php echo base_url(); ?>/works/proj_summary_w_cost/<?php echo $project_id ?>" target="_blank" onclick = "generateReports('pswc')"><i class="fa fa-file-pdf-o"></i> Project Summary with Cost</a></li>
+													<li><a href="<?php echo base_url(); ?>/works/proj_summary_wo_cost/<?php echo $project_id ?>" target="_blank" onclick = "generateReports('pswoc')"><i class="fa fa-file-pdf-o"></i> Project Summary without Cost</a></li>
+													<li><a href="<?php echo base_url(); ?>/works/proj_joinery_summary_w_cost/<?php echo $project_id ?>" target="_blank" onclick = "generateReports('jswc')"><i class="fa fa-file-pdf-o"></i> Joinery Summary with Cost</a></li>
+													<li><a href="<?php echo base_url(); ?>/works/proj_joinery_summary_wo_cost/<?php echo $project_id ?>" target="_blank" onclick = "generateReports('jswoc')"><i class="fa fa-file-pdf-o"></i> Joinery Summary without Cost</a></li>
 													
-													<li><a href="<?php echo site_url(); ?>works/variation_summary/<?php echo $project_id ?>" target="_blank" onclick = "generateReports('var_sum')"><i class="fa fa-file-pdf-o"></i> Variations Summary</a></li>
-													<li><a href="<?php echo site_url(); ?>works/proj_details/<?php echo $project_id ?>" target="_blank" onclick = "generateReports('proj_details')"><i class="fa fa-file-pdf-o"></i> Project Details</a></li>
+													<li><a href="<?php echo base_url(); ?>/works/variation_summary/<?php echo $project_id ?>" target="_blank" onclick = "generateReports('var_sum')"><i class="fa fa-file-pdf-o"></i> Variations Summary</a></li>
+													<li><a href="<?php echo base_url(); ?>/works/proj_details/<?php echo $project_id ?>" target="_blank" onclick = "generateReports('proj_details')"><i class="fa fa-file-pdf-o"></i> Project Details</a></li>
 													<li><a href="" id = "work_cont_quote_req"><i class="fa fa-file-pdf-o"></i> Contractor Quote Request</a></li>
 													<li><a href="" id = "work_cont_po"><i class="fa fa-file-pdf-o"></i> Contractor Purchase Order</a></li>
 													<?php if($job_category == "Maintenance"){
@@ -825,7 +825,7 @@ $filtered_date = $induction_commencement_date;
 														} 
 													?>
 													<?php if($this->session->get('is_admin') == 1 ): ?>
-													<li><a href="amplemod/print_pdf"><i class="fa fa-file-pdf-o"></i> Quotation and Contract</a></li>
+													<!-- <li><a href="amplemod/print_pdf"><i class="fa fa-file-pdf-o"></i> Quotation and Contract</a></li> -->
 													<?php endif; ?>
 													<li><a href="#" onclick = "create_contract(<?php echo $project_id ?>)"><i class="fa fa-file-pdf-o"></i> Contract, Terms of Trade<br />&amp; Request for New Trade Form</a></li>
 
@@ -837,7 +837,7 @@ $filtered_date = $induction_commencement_date;
 
 													<?php endif; ?>
 													<?php if($this->session->get('is_admin') == 1 ): ?>
-													<li><a href="<?php echo site_url(); ?>induction_health_safety/induction_slide_editor_view?project_id=<?php echo $project_id ?>" id = "project_induction"><i class="fa fa-file-pdf-o"></i> Inductions Templates</a></li>
+													<!-- <li><a href="<?php echo site_url(); ?>induction_health_safety/induction_slide_editor_view?project_id=<?php echo $project_id ?>" id = "project_induction"><i class="fa fa-file-pdf-o"></i> Inductions Templates</a></li> -->
 													<?php endif; ?>
 
 													<li><a href="<?php echo site_url(); ?>reports/print_project_amendments?project_id=<?php echo $project_id ?>" id="print_project_amendments"><i class="fa fa-file-pdf-o"></i> Project Amendments</a></li>
@@ -2406,7 +2406,7 @@ $('input#doc_files').on('dragover', function(e) {
 	}
 
 	$("#autoUploadYes").click(function(){
-		$.post(baseurl+"projects/copy_report_to_docstroge", 
+		$.post("<?php echo base_url() ?>/projects/copy_report_to_docstroge", 
 		{ 
 			report_type: report_type,
 			project_id: '<?php echo $project_id ?>'
@@ -2418,12 +2418,12 @@ $('input#doc_files').on('dragover', function(e) {
 
 	$("#site_diary_pdf").click(function(){
 		var project_id = '<?php echo $project_id ?>'
-		$.post(baseurl+"induction_health_safety/generate_site_diary_qrcode",
+		$.post("<?php echo base_url() ?>/induction_health_safety/generate_site_diary_qrcode",
 	    {
 	        project_id: project_id
 	    },
 	    function(result){
-	        window.open(baseurl+'induction_health_safety/induction_site_diary_blank_pdf?project_id='+project_id);
+	        window.open('<?php echo base_url() ?>/induction_health_safety/induction_site_diary_blank_pdf?project_id='+project_id);
 	    });
 		return false;
 	});
@@ -2869,6 +2869,135 @@ $('#open_job_quote_rvw').click(function(){
 	$('.quote_jobs_list').html(elem);
 
 });
+
+	$("#work_cont_quote_req").click(function(){
+		var proj_id = "<?php echo $project_id ?>";
+    var work_id = $("#cont_cpono").text();
+    if(work_id == 0){
+      alert("Please select Work Contractor");
+    }else{
+      $.post("<?php echo base_url() ?>/works/works_contractors", 
+      { 
+        work_id: work_id
+      }, 
+      function(result){
+        var work_contrator_id = result.split("|");
+        var x = 0;
+        while(x < (work_contrator_id.length - 1)){
+          var contractor_id_arr = work_contrator_id[x].split("-");
+          var contractor_id = contractor_id_arr[0];
+          var is_pending = contractor_id_arr[1];
+          window.open("<?php echo base_url() ?>/works/contractor_quote_request/"+proj_id+"/"+work_id+"/"+contractor_id+"/"+is_pending);
+          x++;
+        }
+      });
+      
+    }
+    return false;
+  });
+	var joinery_work_id = 0;
+  $("#work_cont_po").click(function(){
+  		var proj_id = "<?php echo $project_id ?>";
+    	var work_id = $("#cont_cpono").text();
+  		var job_date = "<?php echo $job_date ?>";
+      if(job_date == ""){
+        alert("Cannot Create CPO, Job Date Required!");
+      }else{
+        //var proj_id = get_project_id();
+        if(work_id == 0){
+          alert("Please select Work Contractor");
+        }else{
+          if(contractor_set == 1){
+            if(joinery_work_id == 0){
+              window.open("<?php echo base_url() ?>/works/work_contractor_po/"+proj_id+"/"+work_id);
+            }else{
+              window.open("<?php echo base_url() ?>/works/work_contractor_po/"+proj_id+"/"+work_id+"/"+joinery_work_id);
+            }
+            
+          }else{
+            alert("Contractor is not yet selected!");
+          }
+        }
+      }
+      return false;
+  });
+
+  $("#maintenance_site_sheet").click(function(){
+  	var work_id = $("#cont_cpono").text();
+  	var proj_id = "<?php echo $project_id ?>";
+    if(work_id == 0 || work_id == ""){
+      alert("No Work selected!");
+    }else{
+      if($(".add_comp_badge_"+work_id).is(":visible") == false){
+        window.open("<?php echo base_url() ?>/works/maintenance_site_sheet/"+proj_id+"/"+work_id);
+      }else{
+        alert("No CPO yet!");
+      }
+    }
+    return false;  
+  });
+
+  window.create_contract = function(a){
+	  var prog_payment_stat = "<?php echo $prog_payment_stat ?>";//$("#prog_payment_stat").val();
+	  if(prog_payment_stat == 0){
+	    alert("Progress Payment is not yest set!");
+	  }else{
+	    $("#contract_notes_reports_tab").modal("show");
+	    var project_id = a;
+	    $.post("<?php echo base_url() ?>/works/get_contract_notes",
+	    { project_id : "<?php echo $project_id ?>" },
+	    function(result){
+	      var proj_notes = result.split( '|' );
+
+	      $("#reports_contract_date").val(proj_notes[0]);
+	      $("#reports_plans_elv_draw").val(proj_notes[1]);
+	      $("#reports_sched_work_quotation").val(proj_notes[2]);
+	      $("#reports_condition_quote_contract").val(proj_notes[3]);
+	    });
+	  }
+	  return false;
+	}
+
+	$("#create_contract").click(function(){
+    var project_id = "<?php echo $project_id ?>";
+    // var contract_date = $("#reports_contract_date").val();
+    // var plans_elv_draw = "";
+    // var sched_work_quotation = "";
+    // var condition_quote_contract = "";
+
+    // if(contract_date == ""){
+      contract_date = $("#reports_contract_date").val();
+      plans_elv_draw = $("#reports_plans_elv_draw").val();
+      sched_work_quotation = $("#reports_sched_work_quotation").val();
+      condition_quote_contract = $("#reports_condition_quote_contract").val();
+    // }else{
+    //   contract_date = $("#contract_date").val();
+    //   plans_elv_draw = $("#plans_elv_draw").val();
+    //   sched_work_quotation = $("#sched_work_quotation").val();
+    //   condition_quote_contract = $("#condition_quote_contract").val();
+    // }
+
+    $.post("<?php echo base_url() ?>/works/insert_contract_notes",
+    { 
+      project_id : project_id,
+      cont_date: contract_date,
+      plans_elv_draw: plans_elv_draw,
+      sched_works_qoute: sched_work_quotation,
+      cond_quote_cont: condition_quote_contract
+    },
+    function(result){
+      $.post("<?php echo base_url() ?>/send_emails/display_proj_pdf_list", 
+      { 
+        project_id: project_id
+      }, 
+      function(result){
+      	alert(result);
+        $("#project_pdf_list").html(result);
+        window.open('<?php echo base_url() ?>/works/contract_tot_rfntf/'+project_id);
+      });
+    });
+});
+
 
 
 </script>

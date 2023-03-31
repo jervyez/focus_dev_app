@@ -888,24 +888,6 @@ class Invoice extends BaseController {
     return $invoice_vr;
   }
 
-  public function set_invoice_vr($project_id,$date){
-
-    $query_list_invoice = $this->invoice_m->list_invoice($project_id);
-
-    foreach ($query_list_invoice->getResult() as $row) {
-      $vr_date = $row->invoice_date_req;
-    }
-
-    $order_invoice = $query_list_invoice->getNumRows() + 1;
-    $label = 'VR';
-    $progress_percent = '100';
-    //$invoice_date_req = date("d/m/Y");
-    $invoice_date_req = $date;
-
-    $this->invoice_m->insert_new_invoice($vr_date, $project_id, $progress_percent,$label,$order_invoice);
-
-  }
-
 
 
 
@@ -1408,4 +1390,3 @@ echo '</td><td><div class="m-top-5"><strong><span class="progress_outstanding">'
 
 
 }
-

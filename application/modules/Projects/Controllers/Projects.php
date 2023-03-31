@@ -4396,4 +4396,67 @@ if($today_rvw_mrkr > $timestamp_day_revuew_req && $today_rvw_mrkr < $timestamp_n
     }   
   }
 
+  public function copy_report_to_docstroge(){
+    $report_type = $_POST['report_type'];
+    
+    $proj_id = $_POST['project_id'];
+
+    $user_id = $this->session->get('user_id');
+
+    $time = time();
+
+      $date_upload = date("d/m/Y");
+
+    $proj_q = $this->projects_m->select_particular_project($proj_id);
+    foreach ($proj_q->result_array() as $row){
+      $client_id = $row['client_id'];
+      $compname = $row['company_name'];
+      $company_name = str_replace(' ', '', $compname);
+    }
+
+    switch($report_type){
+      case "pswc":
+        $file_type = 27;
+        $data_file_name = $proj_id.'_project_summary_w_cost'.$time.'.pdf';
+        $file_name_set = str_replace(' ', '_', $data_file_name);
+        $src_file = './reports/'.$client_id.'_'.$company_name.'/'.$proj_id.'/project_summary_w_cost.pdf';
+        break;
+      case "pswoc":
+        $file_type = 27;
+        $data_file_name = $proj_id.'_project_summary_wo_cost'.$time.'.pdf';
+        $file_name_set = str_replace(' ', '_', $data_file_name);
+        $src_file = './reports/'.$client_id.'_'.$company_name.'/'.$proj_id.'/project_summary_w_cost.pdf';
+        break;
+      case "jswc":
+        $file_type = 33;
+        $data_file_name = $proj_id.'_joinery_summary_w_cost'.$time.'.pdf';
+        $file_name_set = str_replace(' ', '_', $data_file_name);
+        $src_file = './reports/'.$client_id.'_'.$company_name.'/'.$proj_id.'/joinery_summary_w_cost.pdf';
+        break;
+      case "jswoc":
+        $file_type = 33;
+        $data_file_name = $proj_id.'_joinery_summary_wo_cost'.$time.'.pdf';
+        $file_name_set = str_replace(' ', '_', $data_file_name);
+        $src_file = './reports/'.$client_id.'_'.$company_name.'/'.$proj_id.'/joinery_summary_wo_cost.pdf';
+        break;
+      case "var_sum":
+        $file_type = 28;
+        $data_file_name = $proj_id.'_variation_summary'.$time.'.pdf';
+        $file_name_set = str_replace(' ', '_', $data_file_name);
+        $src_file = './reports/'.$client_id.'_'.$company_name.'/'.$proj_id.'/variation_summary.pdf';
+        break;
+      case "proj_details":
+        $file_type = 34;
+        $data_file_name = $proj_id.'_project_details'.$time.'.pdf';
+        $file_name_set = str_replace(' ', '_', $data_file_name);
+        $src_file = './reports/'.$client_id.'_'.$company_name.'/'.$proj_id.'/project_details.pdf';
+        break;
+    }
+
+    $destination_file = './docs/stored_docs/'.$data_file_name;
+
+    $this->projects_m->insert_uploaded_file($file_name_set,$file_type,$proj_id,0,$date_upload,$user_id,0);
+    copy($src_file, $destination_file);
+  }
+
 }

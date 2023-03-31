@@ -1,9 +1,6 @@
 <?php use App\Modules\Contacts\Controllers\Contacts; ?>
 <?php $this->contacts = new Contacts(); ?>
 
-<?php use App\Modules\Bulletin_board\Controllers\Bulletin_board; ?>
-<?php $this->bulletin_board = new Bulletin_board(); ?>
-
 <!-- title bar -->
 <div class="container-fluid head-control">
 	<div class="container-fluid">
@@ -138,13 +135,13 @@
 </div>
 
 <form style="display: none;" class="generate_focus_contacts form-inline pull-right m-left-20" role="form">
-  <div class="form-group pull-right"">
+  <div class="form-group pull-right">
     <select id="gen_type" class="form-control input-sm m-left-10" style="width:200px;">
 		<option value="0">PDF</option>
 		<option value="1">CSV</option>
 	</select>
 
-	<button type="button" id="gen_btn" class="btn btn-success input-sm">Generate</button>
+	<div type="button" id="gen_contacts_btn" class="btn btn-success input-sm">Generate</div>
   </div>
 </form>
 
@@ -202,17 +199,57 @@
 	</div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
-<?php $this->bulletin_board->list_latest_post(); ?>
+
 <?php echo view('assets/logout-modal'); ?>
 
 <script type="text/javascript">
 	
 	$('a.company-tab').on('shown.bs.tab', function (e) {
 		$('label.custom-title').text('Company Contact List');
-	})
+	});
 
 	$('a.focus-tab').on('shown.bs.tab', function (e) {
 		$('label.custom-title').text('Focus Contact List');
-	})
+	});
+
+	
+
+
+	$( document ).ready(function() {
+		setTimeout(function(){
+			$('#gen_contacts_btn').click(function(){
+				$('#loading_modal').modal({"backdrop": "static", "show" : true} );
+
+				let gen_type = $('select#gen_type').val();
+				//alert(gen_type);
+
+				if(gen_type == 1){ // CSV REPORT
+
+					setTimeout(function(){
+						$('#loading_modal').modal('hide');
+						window.open('<?php echo site_url(); ?>reports/contacts_gen/1', '_blank');
+					}, 1000);
+
+				}else{
+
+					$.ajax({
+						'url' : '<?php echo site_url(); ?>reports/contacts_gen/0',
+						'type' : 'GET',
+						'success' : function(data){
+							if(data){
+								$('#loading_modal').modal('hide');
+								$('.report_result').html(data);
+								window.open('<?php echo site_url(); ?>docs/temp/'+data+'.pdf', '', 'height=590,width=850,top=100,left=100,location=no,toolbar=no,resizable=yes,menubar=no,scrollbars=yes',true);
+							}
+						}
+					});
+
+
+
+				}
+
+			});
+		}, 1000);
+	});
 
 </script>

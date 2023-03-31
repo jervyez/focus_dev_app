@@ -82,7 +82,9 @@ $routes->group('projects', ['namespace' => 'App\Modules\Projects\Controllers'], 
   $subroutes->post('get_work_list'           , 'Projects::get_work_list' );
   $subroutes->post('get_project_site_labour_cost'           , 'Projects::get_project_site_labour_cost' );
 
+  $subroutes->post('copy_report_to_docstroge'           , 'Projects::copy_report_to_docstroge' );
 
+  
 
 
 

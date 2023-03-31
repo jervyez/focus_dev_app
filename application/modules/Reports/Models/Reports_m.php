@@ -40,6 +40,17 @@ class Reports_m{
         return $query;
     }
 
+    public function get_users_contacts(){
+
+       $query = $this->db->query("SELECT CONCAT(`users`.`user_first_name`,' ',`users`.`user_last_name`) AS `full_name`, `contact_number`.`direct_number`, `contact_number`.`mobile_number`, `contact_number`.`personal_mobile_number` ,`email`.`personal_email`, `email`.`general_email`, `users`.`user_skype`
+        FROM `users`
+        LEFT JOIN `contact_number` ON `contact_number`.`contact_number_id` = `users`.`user_contact_number_id`
+        LEFT JOIN  `email` ON `email`.`email_id` =  `users`.`user_email_id`
+        WHERE `users`.`is_active` = 1  
+        ORDER BY `full_name` ASC;");
+       return $query;
+    }
+
 
 
     public function select_list_invoice($has_where,$project_num_q,$client_q,$invoice_status_q,$progress_claim_q,$project_manager_q,$order_q){

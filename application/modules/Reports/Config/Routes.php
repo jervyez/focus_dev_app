@@ -18,7 +18,20 @@ $routes->group('reports', ['namespace' => 'App\Modules\Reports\Controllers'], fu
   $subroutes->get('pdf/(:any)/(:any)/(:any)'        , 'Reports::pdf/$1/$2/$3');
   $subroutes->post('pdf'                            , 'Reports::pdf');
 
-  $subroutes->get('test'                            , 'Reports::test');
+  $subroutes->get('purchase_order_report'           , 'Reports::purchase_order_report');
+  $subroutes->post('purchase_order_report'          , 'Reports::purchase_order_report');
+
+  $subroutes->get('invoice_report'                  , 'Reports::invoice_report');
+  $subroutes->post('invoice_report'                 , 'Reports::invoice_report');
+
+  $subroutes->get('client_supply_report'            , 'Reports::client_supply_report');
+  $subroutes->post('client_supply_report'           , 'Reports::client_supply_report');
+
+
+  $subroutes->get('contacts_gen/(:any)'             , 'Reports::contacts_gen/$1');
+
+
+
 
 
 });

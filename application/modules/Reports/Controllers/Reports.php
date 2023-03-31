@@ -11,6 +11,8 @@ use App\Modules\Admin\Models\Admin_m;
 use App\Modules\Company\Controllers\Company;
 use App\Modules\Company\Models\Company_m;
 
+use App\Modules\Projects\Controllers\Projects;
+
 use App\Modules\Reports\Models\Reports_m;
 
 use App\Modules\Invoice\Controllers\Invoice;
@@ -605,16 +607,6 @@ if($prj_status != ''){
 
 
 
-
-
-
- 
-
-
-
-
-
-
     }
 
 
@@ -1088,17 +1080,920 @@ if($prj_status != ''){
     }
 
 
+  public function purchase_order_report(){
+/*
+    if(isset($ajax_var) && $ajax_var!='' && !isset($_POST['ajax_var'])){
+      $data_val = explode('*',$ajax_var);
+    }else{
+      $data_val = explode('*',$_POST['ajax_var'] ?? '');
+    }**/
+
+
+    if($_SERVER['REQUEST_METHOD'] === 'POST'){
+      $data_val = explode('*',$this->request->getPost('ajax_var'));
+    }else{
+      $data_val = explode('*',$this->request->getGet('ajax_var'));
+    }
 
 
 
 
+    $content = '';
+    $pdf_content = '';
+    $csv_content = '';
+    $total_project_value = 0;
+    
+    $current_date = date("d/m/Y");
+
+    $project_manager  = $data_val['0'];
+    $status       = $data_val['1'];
+    $cpo_date_a     = $data_val['2'];
+    $cpo_date_b     = $data_val['3'];
+
+    $reconciled_date_a  = $data_val['4'];
+    $reconciled_date_b  = $data_val['5'];
+    $doc_type       = $data_val['6'];
+    $po_sort      = $data_val['7'];
+    $focus_company    = $data_val['8'];
+    $for_myob     = $data_val['9'];
+    $include_duplicate  = $data_val['10'];
+
+
+    if($cpo_date_a == ''){
+      $cpo_date_a = '01/01/2000';
+    }
+
+    if($cpo_date_b == ''){
+      $cpo_date_b = $current_date;
+    }
+
+
+    if($status == 1){
+      $status_filter = 'Reconciled';
+    }else{
+      $status_filter = 'Outstanding';
+    }
+
+    $focus_company_data = explode('|', $focus_company);
+    $focus_company_filter = $focus_company_data[0];
+    $focus_company_id = $focus_company_data[1];
+
+    $pm_data = explode('|', $project_manager);
+    $project_manager_filter = $pm_data[0];
+    $date_filter_a = '';
+    $date_filter_b = '';
+
+    switch ($po_sort) {
+      case "clnt_asc":
+      $order = ' ORDER BY `company_details`.`company_name` ASC ';
+      $sort = 'Company Name A-Z';
+      break;
+      case "clnt_desc":
+      $order = ' ORDER BY `company_details`.`company_name` DESC ';
+      $sort = 'Company Name Z-A';
+      break;
+      case "cpo_d_asc":
+      $order = ' ORDER BY `unix_work_cpo_date` ASC ';
+      $sort = 'CPO Date ASC';
+      break;
+      case "cpo_d_desc":
+      $order = ' ORDER BY `unix_work_cpo_date` DESC ';
+      $sort = 'CPO Date DESC';
+      break;
+      case "prj_num_asc":
+      $order = ' ORDER BY `works`.`project_id` ASC ';
+      $sort = 'Project ID ASC';
+      break;
+      case "prj_num_desc":
+      $order = ' ORDER BY `works`.`project_id` DESC ';
+      $sort = 'Project ID DESC';
+      break;
+      case "reconciled_d_asc":
+      $order = ' ORDER BY `unix_reconciled_date` ASC ';
+      $sort = 'Reconciled Date ASC';
+      break;
+      case "reconciled_d_desc":
+      $order = ' ORDER BY `unix_reconciled_date` DESC ';
+      $sort = 'Reconciled Date DESC';
+      break;
+      default:
+      $order = ' ORDER BY `company_details`.`company_name` ASC ';
+      $sort = 'Company Name A-Z';
+    }
+
+    if($cpo_date_a != '' && $cpo_date_b != ''){
+      $cpo_date = "
+      AND UNIX_TIMESTAMP( STR_TO_DATE(`works`.`work_cpo_date`, '%d/%m/%Y') ) >= UNIX_TIMESTAMP( STR_TO_DATE('$cpo_date_a', '%d/%m/%Y') ) 
+      AND UNIX_TIMESTAMP( STR_TO_DATE(`works`.`work_cpo_date`, '%d/%m/%Y') ) <= UNIX_TIMESTAMP( STR_TO_DATE('$cpo_date_b', '%d/%m/%Y') ) 
+      ";
+      $date_filter_a = " [CPO Date] $cpo_date_a-$cpo_date_b ";
+    }else{
+      $cpo_date = '';
+    }
+
+    if($reconciled_date_a != '' && $reconciled_date_b != ''){
+      $reconciled_date = "
+      AND UNIX_TIMESTAMP( STR_TO_DATE(`works`.`reconciled_date`, '%d/%m/%Y') ) >= UNIX_TIMESTAMP( STR_TO_DATE('$reconciled_date_a', '%d/%m/%Y') ) 
+      AND UNIX_TIMESTAMP( STR_TO_DATE(`works`.`reconciled_date`, '%d/%m/%Y') ) <= UNIX_TIMESTAMP( STR_TO_DATE('$reconciled_date_b', '%d/%m/%Y') ) 
+      ";
+      $date_filter_b = " [Reconciled Date] $reconciled_date_a-$reconciled_date_b ";
+    }else{
+      $reconciled_date = '';
+    }
+
+    $table_q = $this->reports_m->select_po_data($status,$pm_data[1],$cpo_date,$reconciled_date,$focus_company_id,$order,$for_myob);
+    $records_num = 0;
+
+
+    $content .= '<div class="def_page"><div class="clearfix header"><img src="'.base_url().'/img/focus-logo-print.png" align="left" class="block" style="margin-top:-30px; " /><h1 class="text-right block"  style="margin-top:-10px; margin-bottom:10px;" ><br />'.$status_filter.' List Report</h1></div><br />';
+    $content .= '<table id="" class="table table-striped table-bordered" cellspacing="0" width="100%"><thead><tr>';
+    $content .= '<th width="20%">Company Name</th><th width="20%">MYOB Name</th><th>PO Number</th><th>Price</th><th>Project ID</th><th>CPO Date</th><th>Reconciled</th><th>Start Date</th><th>Finished Date</th></tr></thead><tbody>';
+
+    if($for_myob == 1){
+      $csv_content .= 'Co./Last Name,Inclusive,Purchase #,Date,Supplier Invoice #,Delivery Status,Item Number,Quantity,Price,Total,Job,Tax Code,Tax Amount,Purchase Status,Order'."\n";
+    }else{
+      $csv_content .= 'company_name,myob_name,po_number,price,project_id,work_cpo_date,reconciled_date,date_site_commencement,date_site_finish'."\n"; 
+    }
+
+    foreach ($table_q->getResult() as $row){
+      $code = '';
+
+      if($for_myob == 1){
+        if(  ($include_duplicate == 1 && $row->po_set_report_date != '')  || $row->po_set_report_date == '' ){
+
+          $tax_amount = $row->price*0.1;
+
+          $is_other_work_desc = $row->is_other_work_codes ?? 0;
+
+          if($is_other_work_desc == 1 &&  strlen($row->other_myob_item_no) > 0 ){
+            $code = $row->other_myob_item_no;
+          }else{
+            $code = $row->myob_item_name;
+          }
+
+          if( $row->other_work_desc == 'Site Installation' ){
+            $code = 'INST';
+          }
+
+          $csv_content .= "\"$row->myob_name\"".',X,'."\"00$row->works_id\"".','.$row->work_cpo_date.','.$row->project_id.',A,'.$code.',1,"$'.$row->price.'","$'.$row->price.'",'.$row->project_id.',GST,"$'.$tax_amount.'",o,1'."\n";
+          $csv_content .= ',,,,,,,,,,,,,,'."\n";
+        }
+
+      }else{
+
+        if($doc_type == 'pdf'){
+
+          $pdf_content .= '<tr><td>'.$row->company_name.'</td><td>'.$row->myob_name.'</td>';
+
+          if($row->po_set_report_date != ''){
+            $pdf_content .= '<td style="color:green!important;font-weight:700!important;">'.$row->works_id.'</td>';
+          }else{
+            $pdf_content .= '<td>'.$row->works_id.'</td>';
+          }
+
+          $pdf_content .= '<td>'. number_format($row->price,2).'</td>';
+          $pdf_content .= '<td>'.$row->project_id.'</td><td>'.$row->work_cpo_date.'</td><td>'.$row->reconciled_date.'</td><td>'.$row->date_site_commencement.'</td><td>'.$row->date_site_finish.'</td></tr>';
+
+        }else{
+          $csv_content .= "\"$row->company_name\"".','."\"$row->myob_name\"".','.$row->works_id.','.$row->price.','.$row->project_id.','.$row->work_cpo_date.','.$row->reconciled_date.','.$row->date_site_commencement.','.$row->date_site_finish."\n";
+        }
+
+        $total_project_value = $total_project_value + round($row->price,2);
+        $records_num++;
+      }
+    }
+
+    if($doc_type == 'pdf'){
+      $content .= $pdf_content;
+    }
+
+    $content .= '</tbody></table>';
+    $content .= '<hr /><p style="margin-top:10px;"><strong>Project Manager:</strong> '.$project_manager_filter.'  &nbsp;  &nbsp;  &nbsp;  <strong>Project Total Ex-GST:</strong> $'.number_format($total_project_value,2).'  &nbsp;  &nbsp;  &nbsp; <strong> Note:</strong> All Prices are EX-GST, PO Number is <span style="color:green!important;font-weight:700!important;">GREEN</span> if report is already made. <br /></p><br />';
+    $content .= '</div>';
+
+    if($doc_type == 'pdf'){
+
+
+    $footer_text = '';
+    $footer_text .= 'Company: '.$focus_company_filter.'   ';
+    $footer_text .= 'Date: '.$date_filter_a.'  '.$date_filter_b.'    ';
+    $footer_text .= 'Status: '.$status_filter.'    ';
+    $footer_text .= 'Sort: '.$sort.'    ';
+    $footer_text .= 'Records Found: '.$records_num;
+
+      $my_pdf = $this->html_form($content,'landscape','A4','invoices','temp',$footer_text);
+      echo $my_pdf;
+
+    }else{
+
+      $fname = strtolower( str_replace(' ','_', $status_filter)  );
+      $log_time = time();
+      $name = $fname.'_'.$log_time.'.csv';
+      $content = $csv_content;
+      write_file('./docs/temp/'.$name, $content);
+
+      header('Content-Description: File Transfer');
+      header('Content-Type: application/octet-stream');
+      header('Content-Disposition: attachment; filename="'.basename('./docs/temp/'.$name).'"');
+      header('Expires: 0');
+      header('Cache-Control: must-revalidate');
+      header('Pragma: public');
+      header('Content-Length: ' . filesize('./docs/temp/'.$name));
+
+      flush(); // Flush system output buffer
+      readfile('./docs/temp/'.$name);
+      delete_files('./docs/temp/'.$name);
+    }
+  }
+
+  public function contacts_gen($type){
+
+    $status_filter = 'contacts';
+    $csv_content = '';
+    $content = '';
+
+    $table_q = $this->reports_m->get_users_contacts();
+
+
+    if($type == 1){ // CSV
+
+      $csv_content .= 'Staff Full Name,Direct Number,Mobile Number,Personal Mobile Number,Email Address,Personal Email Address,Skype'."\n";
+
+      foreach ($table_q->getResult() as $row){
+        $csv_content .= $row->full_name.','.$row->direct_number.','.$row->mobile_number.','.$row->personal_mobile_number.','.$row->general_email.','.$row->personal_email.','.$row->user_skype."\n";
+      }
+
+
+
+      $fname = strtolower( str_replace(' ','_', $status_filter)  );
+      $log_time = time();
+      $name = $fname.'_'.$log_time.'.csv';
+      $content = $csv_content;
+      write_file('./docs/temp/'.$name, $content);
+
+      header('Content-Description: File Transfer');
+      header('Content-Type: application/octet-stream');
+      header('Content-Disposition: attachment; filename="'.basename('./docs/temp/'.$name).'"');
+      header('Expires: 0');
+      header('Cache-Control: must-revalidate');
+      header('Pragma: public');
+      header('Content-Length: ' . filesize('./docs/temp/'.$name));
+
+      flush(); // Flush system output buffer
+      readfile('./docs/temp/'.$name);
+      delete_files('./docs/temp/'.$name);
+
+    }else{
+
+
+      
+
+
+      $content .= '<div class="def_page"><div class="clearfix"><img src="'.base_url().'/img/focus-logo-print.png" align="left" class="block" style="margin-top:-30px; " /><h1 class="text-right block"  style="margin-top:-10px; margin-bottom:10px;" ><br />Focus Contact</h1></div>';
+      $content .= '<table id="" class="table table-striped table-bordered" cellspacing="0" width="100%"><thead><tr>';
+      $content .= '<th>Staff Full Name</th><th>Direct Number</th><th>Mobile Number</th><th>Personal Mobile Number</th><th>Email Address</th><th>Personal Email Address</th><th>Skype</th></th></tr></thead><tbody>';
+    
+
+      foreach ($table_q->getResult() as $row){
+        $content .= '<tr><td>'.$row->full_name.'</td><td>'.$row->direct_number.'</td><td>'.$row->mobile_number.'</td><td>'.$row->personal_mobile_number.'</td><td>'.$row->general_email.'</td><td>'.$row->personal_email.'</td><td>'.$row->user_skype.'</td></tr>';
+      }
+
+      $content .= '</tbody></table></div>';
+
+
+
+      $my_pdf = $this->html_form($content,'landscape','A4','invoices','temp');
+      echo $my_pdf;
+
+    }
 
 
 
 
-  public function test(){
 
   }
+
+
+  public function invoice_report(){
+    $this->projects = new Projects();
+    $this->invoice = new Invoice();
+
+    if($_SERVER['REQUEST_METHOD'] === 'POST'){
+      $data_val = explode('*',$this->request->getPost('ajax_var'));
+    }else{
+      $data_val = explode('*',$this->request->getGet('ajax_var'));
+    }
+
+    $content = '';
+
+    $project_number = $data_val['0'];
+    $progress_claim = $data_val['1'];
+    $clinet = $data_val['2'];
+    $invoice_date_a = $data_val['3'];
+    $invoice_date_b = $data_val['4'];
+    $invoice_status = $data_val['5'];
+    $invoice_sort = $data_val['6'];
+    $project_manager = $data_val['7'];
+
+    $invoiced_date_a = $data_val['8'];
+    $invoiced_date_b = $data_val['9'];
+
+
+    $doc_type = $data_val['10'];
+    $focus_comp_id = $data_val['11'];
+
+    $curr_year = date('Y');
+    $inv_date_type = 0;
+
+
+    if($invoice_date_a == ''){
+      $date_a = strtotime(str_replace('/', '-', '10/10/1990'));
+      $date_filter_a = '';
+    }else{
+      $date_a = strtotime(str_replace('/', '-', $invoice_date_a));
+      $date_filter_a = $invoice_date_a;
+      $inv_date_type = 1;
+    }
+
+    if($invoice_date_b == ''){
+      $date_b = strtotime(str_replace('/', '-', '31/12/'.$curr_year));
+      $date_filter_b = '';
+    }else{
+      $date_b = strtotime(str_replace('/', '-', $invoice_date_b));
+      $date_filter_b = $invoice_date_b;
+      $inv_date_type = 1;
+    }
+
+
+
+    if($invoiced_date_a != ''){
+      $date_a = strtotime(str_replace('/', '-', $invoiced_date_a));
+      $date_filter_a = $invoiced_date_a;
+      $inv_date_type = 2;
+    }
+
+    if($invoiced_date_b != ''){
+      $date_b = strtotime(str_replace('/', '-', $invoiced_date_b));
+      $date_filter_b = $invoiced_date_b;
+      $inv_date_type = 2;
+    }
+
+
+    $project_num_q = '';
+    if($project_number != ''){
+      $project_num_q = '`invoice`.`project_id` =  \''.$project_number.'\'';
+      $project_num_filter = $project_number;
+    }else{
+      $project_num_filter = 'All Projects';
+    }
+
+    $client_q = '';
+
+    $clinet_arr = explode('|',$clinet);
+
+    if($clinet != ''){
+      $client_q = ($project_num_q != '' ? 'AND ' : '');
+      $client_q .= '`project`.`client_id` = \''.$clinet_arr['1'].'\' ';
+      $client_filter = $clinet_arr['0'];
+    }else{
+      $client_filter = 'All Clients';
+    }
+
+    $invoice_status_q = '';
+    $status_filter = '';
+    if($invoice_status != ''){
+      $invoice_status_q = ($project_num_q != '' || $client_q != '' ? 'AND ' : '');
+
+        if($invoice_status == '1'){
+          $invoice_status_q .= '`invoice`.`is_invoiced` = \'0\' AND `invoice`.`is_paid` = \'0\''; 
+          $status_filter .= 'Un-Invoiced';      
+        }elseif($invoice_status == '2'){
+          $invoice_status_q .= '`invoice`.`is_invoiced` = \'1\' ';
+          $status_filter .= 'Invoiced';
+        }elseif($invoice_status == '3'){
+          $invoice_status_q .= '`invoice`.`is_paid` = \'1\' ';
+          $status_filter .= 'Paid';
+        }elseif($invoice_status == '4'){
+          $invoice_status_q .= '`invoice`.`is_invoiced` = \'1\' AND `invoice`.`is_paid` = \'0\'';
+          $status_filter .= 'Outstanding';
+        }elseif($invoice_status == '5'){
+          $invoice_status_q .= '`invoice`.`is_invoiced` = \'0\' AND `invoice`.`is_paid` = \'0\''; 
+          $status_filter .= 'Future Invoice';
+        }else{
+
+        }
+    }else{
+      $status_filter = 'All Invoice Status';
+    }
+
+
+      
+
+    if($invoice_status == '1' || $invoice_status == '5'){
+      $date_sort_filter = " AND UNIX_TIMESTAMP( STR_TO_DATE(`invoice`.`invoice_date_req`, '%d/%m/%Y') ) >= $date_a
+      AND UNIX_TIMESTAMP( STR_TO_DATE(`invoice`.`invoice_date_req`, '%d/%m/%Y') ) <= $date_b ";
+    }else{
+      $date_sort_filter = " AND UNIX_TIMESTAMP( STR_TO_DATE(`invoice`.`set_invoice_date`, '%d/%m/%Y') ) >= $date_a
+      AND UNIX_TIMESTAMP( STR_TO_DATE(`invoice`.`set_invoice_date`, '%d/%m/%Y') ) <= $date_b ";
+    }
+
+
+    $progress_claim_q = '';
+
+    if($progress_claim != ''){
+
+      $progress_claim_q = ($project_num_q != '' || $client_q != '' || $invoice_status_q != '' ? 'AND ' : '');
+
+      $progress_claim_arr = explode(',',$progress_claim);
+      $progress_claim_loops = count($progress_claim_arr);
+      $progress_claim_q .= '(';
+
+      foreach ($progress_claim_arr as $progress_claim_key => $progress_claim_val) {
+
+        if($progress_claim_val == 'VR'){
+          $progress_claim_q .= '`invoice`.`label` = \'VR\' ';
+        }elseif($progress_claim_val == 'F'){
+          $progress_claim_q .= '(`invoice`.`label` <> \'VR\' AND `invoice`.`label` <> \'\' )';
+        }else{
+          $progress_claim_q .= '`invoice`.`order_invoice` = \''.$progress_claim_val.'\' ';
+        }
+
+        if($progress_claim_key < $progress_claim_loops-1){
+          $progress_claim_q .= " OR ";
+        }
+      }
+
+      $progress_claim_q .= ')';
+    }
+
+    $project_manager_q = '';
+    $project_manager_arr = explode('|',$project_manager);
+    if($project_manager != ''){
+      $project_manager_q = ($project_num_q != '' || $client_q != '' || $invoice_status_q != '' || $progress_claim_q != '' ? 'AND ' : '');
+      $project_manager_q .= '`project`.`project_manager_id` =  \''.$project_manager_arr['1'].'\'';
+      $project_manager_filter = $project_manager_arr['0'];
+    }else{
+      $project_manager_filter = 'All Project Managers';
+    }
+
+
+    $order_q = '';
+    $sort = '';
+    if($invoice_sort == 'clnt_asc'){
+      $order_q = '  GROUP BY `invoice`.`invoice_id`  ORDER BY `company_details`.`company_name` ASC';
+      $sort = 'Client Name A-Z';
+    }elseif($invoice_sort == 'clnt_desc'){
+      $order_q = '  GROUP BY `invoice`.`invoice_id`  ORDER BY `company_details`.`company_name` DESC';
+      $sort = 'Client Name Z-A';
+    }elseif($invoice_sort == 'inv_d_asc'){
+      $order_q = '  GROUP BY `invoice`.`invoice_id`  ORDER BY `in_set_ord` DESC';
+      $sort = 'Invoiced Date DESC';
+    }elseif($invoice_sort == 'inv_d_desc'){
+      $order_q = '  GROUP BY `invoice`.`invoice_id`  ORDER BY `in_set_ord` ASC';
+      $sort = 'Invoiced Date ASC';
+    }elseif($invoice_sort == 'prj_num_asc'){
+      $order_q = '  GROUP BY `invoice`.`invoice_id`  ORDER BY `invoice`.`project_id` ASC';
+      $sort = 'Project Number Asc';
+    }elseif($invoice_sort == 'prj_num_desc'){
+      $order_q = '  GROUP BY `invoice`.`invoice_id`  ORDER BY `invoice`.`project_id` DESC';
+      $sort = 'Project Number Desc';
+    }elseif($invoice_sort == 'invcing_d_desc'){
+      $order_q = 'ORDER BY `unix_invoice_date_req` DESC';
+      $sort = 'Invoicing Date Desc';
+    }elseif($invoice_sort == 'invcing_d_asc'){
+      $order_q = 'ORDER BY `unix_invoice_date_req` ASC';
+      $sort = 'Invoicing Date Asc';
+    }else { }
+
+    $has_where = '';
+    if($project_num_q != '' || $progress_claim_q != '' || $client_q != '' || $invoice_status_q != '' || $project_manager_q != ''){
+      $has_where = 'WHERE';
+    }
+
+
+
+    if($focus_comp_id > 0){
+      $has_where = "WHERE `project`.`focus_company_id` = '$focus_comp_id' AND ";
+    }else{
+      $has_where = 'WHERE ';
+    }
+
+
+    $table_q = $this->reports_m->select_list_invoice($has_where,$project_num_q,$client_q,$invoice_status_q.' '.$date_sort_filter ,$progress_claim_q,$project_manager_q,$order_q);
+
+
+    $records_num = 0;
+
+    $content .= '<div class="def_page"><div class="clearfix header"><img src="'.base_url().'/img/focus-logo-print.png" align="left" class="block" style="margin-top:-30px; " /><h1 class="text-right block"  style="margin-top:-10px; margin-bottom:10px;" ><br />'.$status_filter.' List Report</h1></div><br />';
+    $content .= '<table id="" class="table table-striped table-bordered" cellspacing="0" width="100%"><thead><tr><th width="20%">Client Name</th><th width="20%">Project Name</th><th>Project No</th>';
+
+    if($inv_date_type == 2){
+      $content .= '<th>Invoiced Date</th>';
+
+    }else{
+      $content .= '<th>Invoicing Date</th>';
+    }
+
+
+    $content .= '<th>Finish Date</th><th>Progress Claim</th><th>Percent</th><th>Amount</th><th>Outstanding</th></tr></thead><tbody>';
+
+
+    $total_project_value = 0;
+    $total_outstading_value = 0;
+    $is_estimated = 0;
+    $total_estimate_value = 0;
+
+
+    if($doc_type == 'pdf'){
+
+      foreach ($table_q->getResult() as $row){
+        $is_estimated = 0;
+
+        $project_total_values = $this->projects->fetch_project_totals($row->invoice_project_id);
+
+        if($row->label == 'VR'){
+          $progress_order = 'Variation';
+        }elseif($row->label != 'VR' && $row->label != ''){
+          $progress_order = $row->label;
+        }else{
+          $progress_order = $row->invoice_project_id.'P'.$row->order_invoice;       
+        }
+
+        if($progress_order == 'Variation'){
+          //$project_total_percent = $project_total_values['variation_total'];
+          $project_total_percent = $row->variation_total;
+        }else{
+          if($row->is_paid == 1 ){
+            $project_total_percent = $row->invoiced_amount;
+          }else{
+          //  $project_total_percent = $row->project_total * ($row->progress_percent/100);
+          // set revision for estimate budget
+            if($row->install_time_hrs > 0 || $row->work_estimated_total > 0.00   ){
+              $project_total_percent = $row->project_total * ($row->progress_percent/100);
+            }else{
+              $project_total_percent = $row->budget_estimate_total * ($row->progress_percent/100);
+              $is_estimated = 1;
+              $total_estimate_value = $total_estimate_value + ( $row->budget_estimate_total * ($row->progress_percent/100) );
+            }
+          // set revision for estimate budget
+          }
+        }
+
+        $outstanding = $this->invoice->get_current_balance($row->invoice_project_id,$row->invoice_id,$project_total_percent);
+
+        if( $row->is_invoiced == '0'){
+          $outstanding = '0.00';
+        }
+
+        $total_project_value = $total_project_value + $project_total_percent;
+        $total_outstading_value = $outstanding + $total_outstading_value;
+        $project_total_percent = number_format($project_total_percent,2);
+        $outstanding = number_format($outstanding,2);
+
+        $content .= '<tr><td>'.$row->company_name.'</td><td>'.$row->project_name.'</td><td>'.$row->invoice_project_id.'</td>';
+
+        if($inv_date_type == 2){
+          $content .= '<td>'.$row->set_invoice_date.'</td>';
+        }else{
+          $content .= '<td>'.$row->invoice_date_req.'</td>';
+        }
+
+        $content .= '<td>'.$row->date_site_finish.'</td><td>'.$progress_order.'</td><td>'.number_format($row->progress_percent,2).'</td><td><span class="estimated_'.$is_estimated.'">'.$project_total_percent.'</span></td><td>'.$outstanding.'</td></tr>';
+        $records_num++;
+      } 
+
+      $content .= '</tbody></table>';
+      $content .= '<hr /><p style="margin-top:10px;"><strong>Project Manager:</strong> '.$project_manager_filter.' &nbsp;  &nbsp;  &nbsp; <strong> Note:</strong> All Prices are EX-GST &nbsp;  &nbsp;  &nbsp; <strong>Project Total Ex-GST:</strong> $ '.number_format($total_project_value,2).'  &nbsp;  &nbsp;  &nbsp; <strong>Outstading Ex-GST:</strong> $ '.number_format($total_outstading_value,2).'     &nbsp;  &nbsp;  &nbsp; <span class="estimated_1"><strong>Estimate Ex-GST:</strong> $ '.number_format($total_estimate_value,2).'</span>   <br /></p><br />';
+      $content .= '<style>.estimated_1{ color:green; font-weight:bold; }</style>';
+      $content .= '</div>';
+
+      $footer_text = '';
+      $footer_text .= 'Client: '.$client_filter.'   ';
+
+
+      if($date_filter_a != '' || $date_filter_b != ''){
+        $footer_text .= 'Date: '.$date_filter_a.' - '.$date_filter_b.'    ';
+      }
+
+      $footer_text .= 'Sort: '.$sort.'    ';
+      $footer_text .= 'Records Found: '.$records_num;
+
+
+      $my_pdf = $this->html_form($content,'landscape','A4','invoices','temp',$footer_text);
+      echo $my_pdf;
+    }else{ /////////// cSV
+
+      $content = "client_name,project_name,project_no,invoiced_date,finish_date,progress_claim,percent,amount,outstanding,focus_company\n";
+
+
+      foreach ($table_q->getResult() as $row){
+        $project_total_values = $this->projects->fetch_project_totals($row->invoice_project_id);
+
+        if($row->label == 'VR'){
+          $progress_order = 'Variation';
+        }elseif($row->label != 'VR' && $row->label != ''){
+          $progress_order = $row->label;
+        }else{
+          $progress_order = $row->invoice_project_id.'P'.$row->order_invoice;       
+        }
+
+
+        if($progress_order == 'Variation'){
+          $project_total_percent = $row->variation_total;
+        }else{
+
+          if($row->is_paid == 1 ){
+            $project_total_percent = $row->invoiced_amount;
+          }else{
+            $project_total_percent = $row->project_total * ($row->progress_percent/100);
+          }
+        }
+
+        $outstanding = $this->invoice->get_current_balance($row->invoice_project_id,$row->invoice_id,$project_total_percent);
+
+        if( $row->is_invoiced == '0'){
+          $outstanding = '0.00';
+        }
+
+        $total_project_value = $total_project_value + $project_total_percent;
+        $total_outstading_value = $outstanding + $total_outstading_value;
+
+        $content .=  str_replace(',', ' ', $row->company_name).','. str_replace(',', ' ', $row->project_name).','.$row->invoice_project_id.',';
+
+        if($inv_date_type == 2){
+          $content .= $row->set_invoice_date.',';
+        }else{
+          $content .= $row->invoice_date_req.',';
+        }
+
+        $content .= $row->date_site_finish.','.$progress_order.','.$row->progress_percent.','.$project_total_percent.','.$outstanding.','.$row->focus_company_id."\n";
+      }
+
+      $fname = strtolower( str_replace(' ','_', $status_filter)  );
+      $log_time = time();
+      $name = $fname.'_'.$log_time.'.csv';
+      
+      write_file('./docs/temp/'.$name, $content);
+
+      header('Content-Description: File Transfer');
+      header('Content-Type: application/octet-stream');
+      header('Content-Disposition: attachment; filename="'.basename('./docs/temp/'.$name).'"');
+      header('Expires: 0');
+      header('Cache-Control: must-revalidate');
+      header('Pragma: public');
+      header('Content-Length: ' . filesize('./docs/temp/'.$name));
+
+      flush(); // Flush system output buffer
+      readfile('./docs/temp/'.$name);
+      delete_files('./docs/temp/'.$name);
+    }
+  }
+
+
+  public function client_supply_report(){
+
+    if($_SERVER['REQUEST_METHOD'] === 'POST'){
+      $data_val = explode('*',$this->request->getPost('ajax_var'));
+    }else{
+      $data_val = explode('*',$this->request->getGet('ajax_var'));
+    }
+
+
+    $content = '';
+    $pdf_content = '';
+    $csv_content = '';
+    $total_project_value = 0;
+    $custom = '';
+    
+    $current_date = date("d/m/Y");
+
+    $project_number_supply  = $data_val['0'];
+    $project_manager_csply  = $data_val['1'];
+    $supply_status      = $data_val['2'];
+
+    $warehouse_delivery_a = $data_val['3'];
+    $warehouse_delivery_b = $data_val['4'];
+    $goods_arrived_a    = $data_val['5'];
+    $goods_arrived_b    = $data_val['6'];
+
+    $delivery_to_site_a   = $data_val['7'];
+    $delivery_to_site_b   = $data_val['8'];
+    $completed_delivery_a = $data_val['9']; 
+    $completed_delivery_b = $data_val['10'];
+
+    $supply_report_sort   = $data_val['11'];
+
+    $data_filter = '';
+    $supply_status_selected = '';
+
+    $pm_selected_arr = explode('|', $project_manager_csply);
+
+    if($project_number_supply != ''){
+      $custom .= " AND  `client_supply`.`project_id` = '".$project_number_supply."' ";    
+    }
+
+    if($project_manager_csply != ''){
+      $custom .= " AND  `project`.`project_manager_id` = '".$pm_selected_arr[0]."' ";   
+    }
+
+    switch ($supply_status) {
+      case "1":
+      $custom .= " AND `client_supply`.`is_delivered_date` IS NULL AND `client_supply`.`date_goods_arrived` = '' ";
+      $data_filter .= "Status: Inbound  ";
+      $supply_status_selected = 'Inbound';
+      break;
+
+      case "2":
+      $custom .= " AND `client_supply`.`is_delivered_date` IS NULL AND `client_supply`.`date_goods_arrived` != '' ";
+      $data_filter .= "Status: Outbound  ";
+      $supply_status_selected = 'Outbound';
+      break;
+
+      case "3":
+      $custom .= " AND `client_supply`.`is_delivered_date` IS NOT NULL AND `client_supply`.`date_goods_arrived` != '' ";
+      $data_filter .= "Status: Completed  ";
+      $supply_status_selected = 'Completed';
+      break;
+      
+      default:
+      $custom .= ' ';
+      $data_filter .= "Status: All Status  ";
+      $supply_status_selected = 'All Status';
+    }
+
+    if($warehouse_delivery_a != ''){
+      $custom .= " AND UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`date_goods_expected` , '%d/%m/%Y') ) >= UNIX_TIMESTAMP( STR_TO_DATE('$warehouse_delivery_a', '%d/%m/%Y') ) ";    
+    }
+
+    if($warehouse_delivery_b != ''){
+      $custom .= " AND UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`date_goods_expected` , '%d/%m/%Y') ) <= UNIX_TIMESTAMP( STR_TO_DATE('$warehouse_delivery_b', '%d/%m/%Y') ) ";    
+    }
+
+    if($warehouse_delivery_a != '' || $warehouse_delivery_b != ''){
+      $data_filter .= "Delivery Date To Warehouse: $warehouse_delivery_a - $warehouse_delivery_b  ";
+    }
+
+    if($goods_arrived_a != ''){
+      $custom .= " AND UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`date_goods_arrived` , '%d/%m/%Y') ) >= UNIX_TIMESTAMP( STR_TO_DATE('$goods_arrived_a', '%d/%m/%Y') ) ";    
+    }
+
+    if($goods_arrived_b != ''){
+      $custom .= " AND UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`date_goods_arrived` , '%d/%m/%Y') ) <= UNIX_TIMESTAMP( STR_TO_DATE('$goods_arrived_b', '%d/%m/%Y') ) ";    
+    }
+
+    if($goods_arrived_a != '' || $goods_arrived_b != ''){
+      $data_filter .= "Date Goods Arrived: $goods_arrived_a - $goods_arrived_b  ";
+    }
+
+    if($delivery_to_site_a != ''){
+      $custom .= " AND UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`delivery_date` , '%d/%m/%Y') ) >= UNIX_TIMESTAMP( STR_TO_DATE('$delivery_to_site_a', '%d/%m/%Y') ) ";    
+    }
+
+    if($delivery_to_site_b != ''){
+      $custom .= " AND UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`delivery_date` , '%d/%m/%Y') ) <= UNIX_TIMESTAMP( STR_TO_DATE('$delivery_to_site_b', '%d/%m/%Y') ) ";    
+    }
+
+    if($delivery_to_site_a != '' || $delivery_to_site_b != ''){
+      $data_filter .= "Delivery To Site Date: $delivery_to_site_a - $delivery_to_site_b  ";
+    }
+
+    if($completed_delivery_a != ''){
+      $custom .= " AND UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`delivery_date` , '%d/%m/%Y') ) >= UNIX_TIMESTAMP( STR_TO_DATE('$completed_delivery_a', '%d/%m/%Y') ) ";    
+    }
+
+    if($completed_delivery_b != ''){
+      $custom .= " AND UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`delivery_date` , '%d/%m/%Y') ) <= UNIX_TIMESTAMP( STR_TO_DATE('$completed_delivery_b', '%d/%m/%Y') ) ";    
+    }
+
+    if($completed_delivery_a != '' || $completed_delivery_b != ''){
+      $data_filter .= "Completed Date: $completed_delivery_a - $completed_delivery_b  ";
+    }
+
+    switch ($supply_report_sort) {
+      case "wdas":
+      $custom .= " ORDER BY UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`date_goods_expected` , '%d/%m/%Y') ) ASC ";
+      $data_filter .= 'Sort: Warehouse Delivery Asc  ';
+      break;
+      case "wdds":
+      $custom .= " ORDER BY UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`date_goods_expected` , '%d/%m/%Y') ) DESC ";
+      $data_filter .= 'Sort: Warehouse Delivery Desc  ';
+      break;
+      case "awas":
+      $custom .= " ORDER BY UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`date_goods_arrived` , '%d/%m/%Y') ) ASC ";
+      $data_filter .= 'Sort: Arrived to Warehouse Asc  ';
+      break;
+      case "awds":
+      $custom .= " ORDER BY UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`date_goods_arrived` , '%d/%m/%Y') ) DESC ";
+      $data_filter .= 'Sort: Arrived to Warehouse Desc  ';
+      break;
+      case "dsas":
+      $custom .= " ORDER BY UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`delivery_date` , '%d/%m/%Y') ) ASC ";
+      $data_filter .= 'Sort: Delivery To Site Asc  ';
+      break;
+      case "dsds":
+      $custom .= " ORDER BY UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`delivery_date` , '%d/%m/%Y') ) DESC ";
+      $data_filter .= 'Sort: Delivery To Site Desc  ';
+      break;
+      case "cdas":
+      $custom .= " ORDER BY UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`is_delivered_date` , '%d/%m/%Y') ) ASC ";
+      $data_filter .= 'Sort: Completed Delivery Asc  ';
+      break;
+      case "cdds":
+      $custom .= " ORDER BY UNIX_TIMESTAMP( STR_TO_DATE( `client_supply`.`is_delivered_date` , '%d/%m/%Y') ) DESC ";
+      $data_filter .= 'Sort: Completed Delivery Desc  ';
+      break;
+      default:
+      $custom .= ' ORDER BY `client_supply`.`client_supply_id` ASC ';
+      $data_filter .= 'Sort: Oldest Supply First  ';
+    }
+
+    $table_q = $this->reports_m->client_supply_report_q($custom);
+    $records_num = 0;
+
+    $content .= '<div class="def_page"><div class="clearfix header"><img src="'.base_url().'/img/focus-logo-print.png" align="left" class="block" style="margin-top:-30px; " /><h1 class="text-right block"  style="margin-top:-10px; margin-bottom:10px;" ><br />'.$supply_status_selected.' Supply Report</h1></div><br />';
+    $content .= '<table id="" class="table table-striped table-bordered" cellspacing="0" width="100%"><thead><tr>';
+    $content .= '<th width="5%">Project</th><th width="25%">Client</th><th width="24%">Supply Name</th><th width="25%">Warehouse</th>';
+
+    if($supply_status == 2 || $supply_status == 3){
+      $content .= '<th width="8%">Outbound</th><th width="8%">Completed</th>';
+    }elseif($supply_status == 4){
+      $content .= '<th width="8%">Inbound</th><th width="8%">Outbound</th>';
+    }else{
+      $content .= '<th width="8%">Inbound</th><th width="8%">Arrived</th>';
+    }
+
+    $content .= '</tr></thead><tbody>';
+
+    foreach ($table_q->getResult() as $row){
+
+      if($row->is_delivered_date != ''){
+        $content .= '<tr style="background-color:#BEF5BE;">';
+      }elseif($row->date_goods_arrived != ''){
+
+        if( $row->unix_dlvy_dt < strtotime(date('Y-m-d')) ){
+          $content .= '<tr style="background-color:#FFC6C6;">';
+        } else{
+          $content .= "<tr>";
+        }
+
+      }else{
+        if($row->date_goods_arrived == ''){
+
+          if( $row->unix_dt_gds_expt < strtotime(date('Y-m-d')) ){
+            $content .= '<tr style="background-color:#FFC6C6;">';
+          } else {
+            $content .= "<tr>";
+          }
+
+        }else{
+          $content .= "<tr>";
+        }
+      }
+
+
+      $content .= "<td>$row->project_id</td>
+      <td>$row->company_name</td>
+      <td>$row->supply_name</td>
+      <td>$row->warehouse</td>";
+   
+
+      if($supply_status == 2 || $supply_status == 3){
+        $content .= '<td width="8%">'.$row->delivery_date.'</td><td width="8%">'.$row->is_delivered_date.'</td>';
+      }elseif($supply_status == 4){
+        $content .= '<td width="8%">'.$row->date_goods_expected.'</td><td width="8%">'.$row->delivery_date.'</td>';
+      }else{
+        $content .= "<td>$row->date_goods_expected</td><td>$row->date_goods_arrived</td>";
+      }
+
+
+      $content .= "</tr>";
+      $records_num++;
+    }
+
+    $content .= '</tbody></table>';
+    $content .= '<hr /><p style="margin-top:10px;">';
+    $content .= '<strong> Legend :</strong>  &nbsp;  &nbsp; <span style="background:#BEF5BE; color:#000; padding:3px;">&nbsp; Delivered &nbsp;</span>  &nbsp; &nbsp; &nbsp; <span style="background:#FFC6C6; color:#000; padding:3px;">&nbsp; Overdue Delivery &nbsp;</span>';
+    $content .= '</div>';
+
+
+    $footer_text = '';
+
+    if($project_manager_csply != ''){
+      $footer_text .= 'Project Manager: '.$pm_selected_arr[1].'   ';
+    }
+
+    $footer_text .= $data_filter.'   ';
+    $footer_text .= 'Records Found: '.$records_num;
+
+    $my_pdf = $this->html_form($content,'landscape','A4','invoices','temp',$footer_text);
+    echo $my_pdf;
+
+
+  }
+
+
+
+
 
 
 

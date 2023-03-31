@@ -28,6 +28,7 @@ $routes->group('invoice', ['namespace' => 'App\Modules\Invoice\Controllers'], fu
   $subroutes->post('remove_recent_payment'                    , 'Invoice::remove_recent_payment');
 
   $subroutes->add('set_invoice_vr/(:any)/(:any)'                     , 'Invoice::set_invoice_vr/$1/$2');
+
   
 
 

@@ -60,7 +60,7 @@ $estimator_colors['Alexandria'] = $set_colors[6];
 
 	?>
 
-	.red_deadline{       background-image: url( <?php echo $site_url; ?>img/grid-end.png);   background-repeat:no-repeat; }
+	.red_deadline{ background-image: url( <?php echo $site_url; ?>img/grid-end.png);   background-repeat:no-repeat; }
 </style>
 
 <!-- maps api js -->

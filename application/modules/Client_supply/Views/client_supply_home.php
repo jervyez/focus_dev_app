@@ -2527,8 +2527,6 @@ $('.submit_supply_report').on("click", function(event) {
 
       var data = project_number_supply+'*'+project_manager_csply+'*'+supply_status+'*'+warehouse_delivery_a+'*'+warehouse_delivery_b+'*'+goods_arrived_a+'*'+goods_arrived_b+'*'+delivery_to_site_a+'*'+delivery_to_site_b+'*'+completed_delivery_a+'*'+completed_delivery_b+'*'+supply_report_sort;
 
-//alert(data);
-
 
       $.ajax({
         'url' : site_url+'reports/client_supply_report',

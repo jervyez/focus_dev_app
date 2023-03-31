@@ -1143,7 +1143,9 @@ $this->admin_m = new Admin_m();
 								</div> 
  
 
-								<?php if( $this->session->get('is_admin') == 1 ||  $user_role_id == 4  ||  $user_role_id == 8 || $user_role_id == 3 || $user_role_id == 2 || $user_role_id == 20 || $user_role_id == 7 || $user_role_id ==  16 || $user_id_page == $this->session->get['user_id']  ): ?>
+								<?php if( $this->session->get('is_admin') == 1 ||  $user_role_id == 4  ||  $user_role_id == 8 || $user_role_id == 3 || $user_role_id == 2 || $user_role_id == 20 || $user_role_id == 7 
+								|| $user_role_id ==  16 
+								|| $user_id_page == $this->session->get('user_id')  ): ?>
 
 								<div id="collapseListGroup2" class="panel-collapse collapse" role="tabpanel" aria-labelledby="collapseListGroupHeading1" aria-expanded="false" style="height: 0px;">
 

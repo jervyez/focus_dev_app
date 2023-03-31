@@ -1672,14 +1672,14 @@ if(focus_company == ''){
     if(output_file == 'pdf'){
 
       $.ajax({
-        'url' : site_url+'reports/purchase_order_report',
+        'url' : '<?php echo site_url(); ?>reports/purchase_order_report',
         'type' : 'POST',
         'data' : {'ajax_var' : data },
         'success' : function(data){
           if(data){
             $('#loading_modal').modal('hide');
             $('.report_result').html(data);
-            window.open(baseurl+'docs/temp/'+data+'.pdf', '', 'height=590,width=850,top=100,left=100,location=no,toolbar=no,resizable=yes,menubar=no,scrollbars=yes',true);
+            window.open('<?php echo site_url(); ?>docs/temp/'+data+'.pdf', '', 'height=590,width=850,top=100,left=100,location=no,toolbar=no,resizable=yes,menubar=no,scrollbars=yes',true);
           }
         }
       });   
@@ -1690,7 +1690,7 @@ if(focus_company == ''){
 
      $('#filter_invoice').modal('hide');
      $('#loading_modal').modal('hide');
-            window.open(baseurl+'reports/purchase_order_report?ajax_var='+data, '_blank');
+            window.open('<?php echo site_url(); ?>reports/purchase_order_report?ajax_var='+data, '_blank');
 
 
     } 
