@@ -4,8 +4,7 @@
 <?php use App\Modules\Projects\Models\Projects_m; ?>
 <?php $this->projects_m = new Projects_m(); ?>
 
-<?php use App\Modules\Bulletin_board\Controllers\Bulletin_board; ?>
-<?php $this->bulletin_board = new Bulletin_board(); ?>
+<?php $this->request = \Config\Services::request(); ?>
 
 <?php if($this->session->get('projects') == 1): ?>
 <style type="text/css">
@@ -192,7 +191,7 @@
                 </table>
 
                 <div id="" class="pad-5 file_list_of" style="overflow-y: auto;max-height: 781px;border: 1px solid #ccc;border-top: 0;">
-                  <?php $control_year = $this->request->uri->getSegment(3); ?>
+                  <?php $control_year = $this->request->uri->getSegment(3) ?? null; ?>
 
                   <?php if( isset($control_year) && $control_year != '' ): ?>
                     <script type="text/javascript"> $('select#year_prj_cdt').val('<?php echo $control_year; ?>'); </script>
@@ -786,9 +785,4 @@ function toggleFileDownload(){
 </script>
 
 
-
-
-
-
-<?php $this->bulletin_board->list_latest_post(); ?>
 <?php echo view('assets/logout-modal'); ?>

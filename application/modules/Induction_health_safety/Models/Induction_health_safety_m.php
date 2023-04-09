@@ -72,9 +72,10 @@ class Induction_health_safety_m{
 
 
 		$query_a = $this->db->query("SELECT * FROM `archive_registry` WHERE `archive_registry`.`is_active` = '1' AND `archive_registry`.`registry_type_id` = '$registry_type_id'");
-		$achive_data = array_shift($query_a->result_array());
+		$getResultArray = $query_a->getResultArray();
+		$achive_data = array_shift($getResultArray);
 
-		var_dump($achive_data );
+	//	var_dump($achive_data );
 
 
 		$data_expiry_arr = explode('/', $achive_data['expiry']);

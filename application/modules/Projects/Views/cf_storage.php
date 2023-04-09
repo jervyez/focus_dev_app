@@ -34,14 +34,14 @@
       <div class="page-nav-options col-md-6 col-sm-8 col-xs-12 pull-right hidden-xs">
         <ul class="nav nav-tabs navbar-right">
           <li>
-            <a href="<?php echo base_url(); ?>"><i class="fa fa-home"></i> Home</a>
+            <a href="<?php echo site_url(); ?>"><i class="fa fa-home"></i> Home</a>
           </li> 
           <li>
-            <a href="<?php echo base_url(); ?>projects"><i class="fa fa-map-marker"></i> Projects</a>
+            <a href="<?php echo site_url(); ?>projects"><i class="fa fa-map-marker"></i> Projects</a>
           </li> 
         
           <li <?php if($screen=='Supplier'){ echo 'class="active"';} ?> >
-            <a href="<?php echo base_url(); ?>projects/document_storage" class="btn-small"><em class="fa fa-cloud-upload"></em> Doc Storage </a>        
+            <a href="<?php echo site_url(); ?>projects/document_storage" class="btn-small"><em class="fa fa-cloud-upload"></em> Doc Storage </a>        
           </li>
 
         </ul>
@@ -269,7 +269,7 @@
 
                     var file_id = $(this).attr('id');
 
-                    $.post("<?php echo base_url(); ?>projects/remove_uploaded_file",{file_id: file_id});
+                    $.post("<?php echo site_url(); ?>projects/remove_uploaded_file",{file_id: file_id});
                     $(this).parent().remove();
 
                   });
@@ -315,7 +315,7 @@
                     $('#loading_modal').modal({"backdrop": "static", "show" : true} );
 
                     setTimeout(function(){
-                      window.location.replace('<?php echo base_url(); ?>projects/client_file_storage/'+data);
+                      window.location.replace('<?php echo site_url(); ?>projects/client_file_storage/'+data);
                     },1000);
                   });
 
@@ -343,7 +343,7 @@
 
        <div id="" class="" style="display:none;">
 
-       <form method="post" action="<?php echo base_url(); ?>projects/process_zip_download" class="process_zip_form">
+       <form method="post" action="<?php echo site_url(); ?>projects/process_zip_download" class="process_zip_form">
 
        <textarea name="files_list" class="files_list_download form-control" ></textarea>
          
@@ -363,7 +363,7 @@
                 <div id="" class="box-area clearfix pad-5">
                   <div class="clearfix m-5">
 
-                    <form method="post" action="<?php echo base_url(); ?>projects/add_doc_type" class="m-bottom-0">
+                    <form method="post" action="<?php echo site_url(); ?>projects/add_doc_type" class="m-bottom-0">
                       <div class="input-group">
                         <input type="text" class="form-control" value="" name="type_name" placeholder="Type Name">
                         <input type="hidden" name="doc_type" value="1">
@@ -390,7 +390,7 @@
                 <div id="" class="box-area clearfix pad-5">
                   <div class="clearfix m-5">
 
-                    <form method="post" action="<?php // echo base_url(); ?>projects/update_doc_type" class="m-bottom-0">
+                    <form method="post" action="<?php // echo site_url(); ?>projects/update_doc_type" class="m-bottom-0">
                       <div class="input-group">
                         <span class="input-group-btn">
                           <input type="submit" value="Update" class="btn btn-success">
@@ -437,7 +437,7 @@
                   $('.edit_doc_type_box input.type_name').val(type_name);
                   $('.edit_doc_type_box input.type_id').val(type_id);
 
-                  $('.edit_doc_type_box a.delete_dt_link').attr("href", '<?php echo base_url(); ?>projects/delete_doc_type/'+type_id);
+                  $('.edit_doc_type_box a.delete_dt_link').attr("href", '<?php echo site_url(); ?>projects/delete_doc_type/'+type_id);
 
  
                   $('.edit_doc_type_box').show();
@@ -491,7 +491,7 @@
             
 
 
-            <form method="post" action="<?php echo base_url(); ?>projects/process_upload_file_storage" id="upload_doc_file_prj" enctype="multipart/form-data">
+            <form method="post" action="<?php echo site_url(); ?>projects/process_upload_file_storage" id="upload_doc_file_prj" enctype="multipart/form-data">
 
               <div class="input-group m-bottom-10"><span id="" class="input-group-addon">Document Type*</span>
                 <select name="doc_type_name" class="form-control">
@@ -542,7 +542,7 @@
             
 
 
-            <form method="post" action="<?php echo base_url(); ?>projects/process_upload_file_storage" id="upload_doc_file_prj" enctype="multipart/form-data">
+            <form method="post" action="<?php echo site_url(); ?>projects/process_upload_file_storage" id="upload_doc_file_prj" enctype="multipart/form-data">
 
               <div class="input-group m-bottom-10" >
                 <span id="" class="input-group-addon"><strong>Document Type*</strong></span>

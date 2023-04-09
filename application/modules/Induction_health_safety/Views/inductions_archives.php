@@ -1,22 +1,28 @@
-<?php date_default_timezone_set("Australia/Perth");  // date is set to perth and important setting for diff timezone acounts ?>
-<?php $this->load->module('company'); ?>
-<?php $this->load->module('projects'); ?>
-<?php $this->load->module('bulletin_board'); ?>
-<?php $this->load->module('schedule'); ?>
-<?php $this->load->model('admin_m'); ?>
-<?php $this->load->module('induction_health_safety'); ?>
+<?php use App\Modules\Company\Controllers\Company; ?>
+<?php $this->company = new Company(); ?>
 
+<?php use App\Modules\Projects\Controllers\Projects; ?>
+<?php $this->projects = new Projects(); ?>
+
+<?php use App\Modules\Schedule\Controllers\Schedule; ?>
+<?php $this->schedule = new Schedule(); ?>
+
+<?php use App\Modules\Admin\Models\Admin_m; ?>
+<?php $this->admin_m = new Admin_m(); ?>
+
+<?php use App\Modules\Induction_health_safety\Controllers\Induction_health_safety; ?>
+<?php $this->induction_health_safety = new Induction_health_safety(); ?>
 
 
 <?php
     $fetch_archive_types = $this->admin_m->get_archive_types();
-    $archive_types= $fetch_archive_types->result();
+    $archive_types= $fetch_archive_types->getResult();
 ?>
 <?php  echo $tab ?>
 
-<script src="<?php echo base_url(); ?>js/vue.js"></script>
-<script src="<?php echo base_url(); ?>js/moment.min.js"></script>
-<script src="<?php echo base_url(); ?>js/jmespath.js"></script>
+<script src="<?php echo site_url(); ?>js/vue.js"></script>
+<script src="<?php echo site_url(); ?>js/moment.min.js"></script>
+<script src="<?php echo site_url(); ?>js/jmespath.js"></script>
 
 <!-- title bar -->
 
@@ -26,15 +32,15 @@
   }
 
 </style>
-<input type = "hidden" id = "base_url" value = "<?php echo base_url() ?>">
+<input type = "hidden" id = "base_url" value = "<?php echo site_url() ?>">
 <div class="container-fluid head-control">
   <div class="container-fluid">
     <div class="row">
 
       <div class="col-md-5 col-sm-4 col-xs-12 pull-left">
         <header class="page-header">
-          <h3><?php $datestring = "%l, %F %d, %Y"; $time = time(); //use time() for timestamp  ?>
-            <?php echo $screen; ?> Screen<br><small><?php echo mdate($datestring, $time); #echo date("l, F d, Y"); ?></small>
+          <h3><?php $datestring = "l, F d, Y"; $time = time(); //use time() for timestamp  ?>
+            <?php echo $screen; ?> Screen<br><small><?php echo date($datestring, $time); #echo date("l, F d, Y"); ?></small>
           </h3>
         </header>
       </div>
@@ -42,28 +48,28 @@
       <div class="page-nav-options col-md-7 col-sm-8 col-xs-12 pull-right hidden-xs">
         <ul class="nav nav-tabs navbar-right">
           <li class="nav-item">
-            <a href="<?php echo base_url(); ?>"><i class="fa fa-home"></i> Home</a>
+            <a href="<?php echo site_url(); ?>"><i class="fa fa-home"></i> Home</a>
           </li>
 
-        <?php if($this->session->userdata('is_admin') ==  1 || $this->session->userdata('user_id') == 6 || $this->session->userdata('user_id') == 32  ): ?>
+        <?php if($this->session->get('is_admin') ==  1 || $this->session->get('user_id') == 6 || $this->session->get('user_id') == 32  ): ?>
           <li>
-            <a href="<?php echo base_url(); ?>induction_health_safety" class = "active"><i class="fa fa-home"></i> Induction Site Staff</a>
+            <a href="<?php echo site_url(); ?>induction_health_safety" class = "active"><i class="fa fa-home"></i> Induction Site Staff</a>
           </li>
 
           <li>
-            <a href="<?php echo base_url(); ?>induction_health_safety/inductions_projects"><i class="fa fa-home"></i> Induction Projects</a>
+            <a href="<?php echo site_url(); ?>induction_health_safety/inductions_projects"><i class="fa fa-home"></i> Induction Projects</a>
           </li>
            <li>
-            <a href="<?php echo base_url(); ?>induction_health_safety/inductions_videos"><i class="fa fa-home"></i> Uploading Video for Induction</a>
+            <a href="<?php echo site_url(); ?>induction_health_safety/inductions_videos"><i class="fa fa-home"></i> Uploading Video for Induction</a>
           </li>
           <li>
-            <a href="<?php echo base_url(); ?>induction_health_safety/induction_slide_editor_view"><i class="fa fa-home"></i> Induction Slide Templates</a>
+            <a href="<?php echo site_url(); ?>induction_health_safety/induction_slide_editor_view"><i class="fa fa-home"></i> Induction Slide Templates</a>
           </li>
 
         <?php endif; ?>
 
             <li>
-              <a href="<?php echo base_url(); ?>induction_health_safety/archive_documents"><i class="fa fa-file-text-o"></i> Archive Documents</a>
+              <a href="<?php echo site_url(); ?>induction_health_safety/archive_documents"><i class="fa fa-file-text-o"></i> Archive Documents</a>
             </li>
           
         
@@ -78,18 +84,18 @@
 <div class="container-fluid" id = "ihs_app">
   <!-- Example row of columns -->
   <div class="row">       
-    <?php $this->load->view('assets/sidebar'); ?>
+    <?php echo view('assets/sidebar'); ?>
     <div class="section col-sm-12 col-md-11 col-lg-11">
       <div class="container-fluid">
       
         <div class="row" style = "border-bottom: 1px solid; border-color: #CCC">
           <div class="col-lg-4 col-md-12 hidden-md hidden-sm hidden-xs">
-            <?php if(@$this->session->flashdata('project_deleted')): ?>
+            <?php if(@$this->session->getFlashdata('project_deleted')): ?>
               <div class="m-15">
                 <div class="border-less-box alert alert-danger fade in">
                   <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                   <h4>Opps! No turning back now!</h4>
-                  <?php echo $this->session->flashdata('project_deleted');?>
+                  <?php echo $this->session->getFlashdata('project_deleted');?>
                 </div>
               </div>
             <?php endif; ?>
@@ -148,7 +154,7 @@
                              <!--  <option value="<?php echo $archive_data->registry_types_id; ?>_<?php echo $archive_data->registry_name; ?>" > <?php echo $archive_data->registry_name; ?> </option> -->
  
                              <div id="" class="col-md-6">
-                              <form method="post" action="<?php echo base_url(); ?>induction_health_safety/upload_docs_ind" id="upload_docs_ind_<?php echo $archive_data->registry_types_id; ?>" enctype="multipart/form-data">
+                              <form method="post" action="<?php echo site_url(); ?>induction_health_safety/upload_docs_ind" id="upload_docs_ind_<?php echo $archive_data->registry_types_id; ?>" enctype="multipart/form-data">
                                 <div class="input-group m-bottom-15">
                                   <span class="input-group-addon"  style=" border-color: #3E8F3E; color:#3E8F3E; width:35%; text-align: left;"><i class="fa fa-file"></i> <?php echo $archive_data->registry_name; ?></span>
                                   
@@ -202,7 +208,7 @@
                                   <div class=" m-bottom-10 clearfix pad-5"  style="height: 215px;    overflow: auto;">
                                     <?php echo $this->induction_health_safety->view_uploaded_files_arch($archive_data->registry_types_id); ?>
 
-                                    <?php if($this->session->userdata('is_admin') == 1 ): ?>
+                                    <?php if($this->session->get('is_admin') == 1 ): ?>
                                       <div id="" class="">
                                         <hr style=" margin: 5px 0;">
                                         <p><strong>Old Files</strong></p>
@@ -218,7 +224,7 @@
                           <?php endforeach; ?>
 
 
-                          <?php if($this->session->userdata('is_admin') !=  1  ): ?>
+                          <?php if($this->session->get('is_admin') !=  1  ): ?>
                             <style type="text/css">
 
                               .for_admin{ visibility: hidden; display: none; }
@@ -278,5 +284,4 @@
 
 
 
-<?php $this->load->view('assets/logout-modal'); ?>
-<?php $this->bulletin_board->list_latest_post(); ?>
+<?php echo view('assets/logout-modal'); ?>

@@ -4189,6 +4189,7 @@ if($today_rvw_mrkr > $timestamp_day_revuew_req && $today_rvw_mrkr < $timestamp_n
 
   public function induction_project_exempted($project_id){
     $this->admin_m = new Admin_m();
+    $this->company_m = new Company_m();
 
     $admin_defaults = $this->admin_m->fetch_admin_defaults(1);
     foreach ($admin_defaults->getResult() as $row){

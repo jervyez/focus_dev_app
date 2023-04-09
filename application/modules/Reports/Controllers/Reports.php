@@ -41,6 +41,41 @@ class Reports extends BaseController {
     return view('App\Views\page',$data);
   }
 
+  public function myob_names(){
+
+    $content = '';
+    $table_q = $this->reports_m->select_myob_names();
+    $content .= 'company_name,myob_name,abn'."\n";
+
+    foreach ($table_q->getResult() as $row){
+      $format_abn = $row->abn;
+      $format_abn = trim(str_replace(' ', '', $format_abn)); 
+      $data_abn = substr($format_abn,0,2)." ".substr($format_abn,2,3)." ".substr($format_abn,5,3)." ".substr($format_abn,8,3); 
+      $content .= "\"$row->company_name\"".','."\"$row->myob_name\"".','."\"$data_abn\""."\n";
+    }
+
+
+    $log_time = time();
+    $name = 'company_myob_names_'.$log_time.'.csv';
+
+
+    write_file('./docs/temp/'.$name, $content);
+
+
+    header('Content-Description: File Transfer');
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: attachment; filename="'.basename('./docs/temp/'.$name).'"');
+    header('Expires: 0');
+    header('Cache-Control: must-revalidate');
+    header('Pragma: public');
+    header('Content-Length: ' . filesize('./docs/temp/'.$name));
+
+    flush(); // Flush system output buffer
+    readfile('./docs/temp/'.$name);
+    delete_files('./docs/temp/'.$name);
+
+  }
+
   public function company_report(){
     $this->company_m  = new Company_m();
 

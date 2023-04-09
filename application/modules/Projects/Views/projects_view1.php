@@ -18,15 +18,12 @@
 <?php use App\Modules\Works\Controllers\Works; ?>
 <?php $this->works = new Works(); ?>
 
-<?php use App\Modules\Project_schedule\Controllers\Project_schedule; ?>
-<?php $this->project_schedule = new Project_schedule(); ?>
-
-<script src="<?php echo site_url(); ?>/js/vue.js"></script>
-<script src="<?php echo site_url(); ?>/js/vue-select.js"></script>
-<link rel="stylesheet" href="<?php echo site_url(); ?>/css/vue-select.css">
-<script src="<?php echo site_url(); ?>/js/moment.min.js"></script>
-<script src="<?php echo site_url(); ?>/js/jmespath.js"></script>
-<script src="<?php echo site_url(); ?>/js/axios.min.js"></script>
+<script src="<?php echo site_url(); ?>js/vue.js"></script>
+<script src="<?php echo site_url(); ?>js/vue-select.js"></script>
+<link rel="stylesheet" href="<?php echo site_url(); ?>css/vue-select.css">
+<script src="<?php echo site_url(); ?>js/moment.min.js"></script>
+<script src="<?php echo site_url(); ?>js/jmespath.js"></script>
+<script src="<?php echo site_url(); ?>js/axios.min.js"></script>
 
 <?php
 $this->session = \Config\Services::session();
@@ -1425,7 +1422,7 @@ $filtered_date = $induction_commencement_date;
 										<div class="tab-pane fade in  clearfix <?php echo ($curr_tab == 'project-schedule' ? 'active' : '' ); ?>" id="project_schedule">
 											<div class="m-bottom-15 clearfix m-top-10">
 												<?php 
-													echo $this->project_schedule->view_project_schedule($project_id); 
+											//review_code		echo $this->project_schedule->view_project_schedule(); 
 												?>
 											</div>
 										</div>
@@ -1454,7 +1451,7 @@ $filtered_date = $induction_commencement_date;
 										<!-- Attachment Tab -->
 										<div class="tab-pane fade in  clearfix <?php echo ($curr_tab == 'attachments' ? 'active' : '' ); ?>" id="attachments">
 											<div class="m-bottom-15 clearfix m-top-10">
-												<?php echo $this->attachments->attachments_view($project_id); ?>
+												<?php //review_code    echo $this->attachments->attachments_view(); ?>
 											</div>
 										</div>
 										<!-- Attachment Tab -->
@@ -1466,7 +1463,7 @@ $filtered_date = $induction_commencement_date;
 
 													<?php use App\Modules\Etc\Controllers\Etc; ?>
 													<?php $this->etc = new Etc(); ?>
-													<?php echo $this->etc->send_pdf($project_id); ?>
+													<?php   //review_code	   echo $this->etc->send_pdf(); ?>
 
 													<?php //$this->etc->remind_hr_left(); ?>
 												<?php // else: ?>
@@ -2886,18 +2883,13 @@ $('#open_job_quote_rvw').click(function(){
       function(result){
         var work_contrator_id = result.split("|");
         var x = 0;
-        if(work_contrator_id.length > 0){
-        	while(x < (work_contrator_id.length - 1)){
-	          var contractor_id_arr = work_contrator_id[x].split("-");
-	          var contractor_id = contractor_id_arr[0];
-	          var is_pending = contractor_id_arr[1];
-	          window.open("<?php echo base_url() ?>/works/contractor_quote_request/"+proj_id+"/"+work_id+"/"+contractor_id+"/"+is_pending);
-	          x++;
-	        }
-        }else{
-        	alert("No contractor has been selected");
+        while(x < (work_contrator_id.length - 1)){
+          var contractor_id_arr = work_contrator_id[x].split("-");
+          var contractor_id = contractor_id_arr[0];
+          var is_pending = contractor_id_arr[1];
+          window.open("<?php echo base_url() ?>/works/contractor_quote_request/"+proj_id+"/"+work_id+"/"+contractor_id+"/"+is_pending);
+          x++;
         }
-        
       });
       
     }
@@ -2999,208 +2991,14 @@ $('#open_job_quote_rvw').click(function(){
         project_id: project_id
       }, 
       function(result){
+      	alert(result);
         $("#project_pdf_list").html(result);
         window.open('<?php echo base_url() ?>/works/contract_tot_rfntf/'+project_id);
       });
     });
 });
 
-window.load_project_schedule = function(){
-  var proj_id = "<?php echo $project_id ?>";//$("#hidden_proj_id").val();
-  var is_admin = $("#ps_is_admin").val();
-  var restrict_ps = $("#ps_restriction").val();
 
-  $.post("<?php echo base_url() ?>/project_schedule/has_project_schedule",
-  {
-    proj_id: "<?php echo $project_id ?>"
-  },
-  function(result){
-    if(result == 0){
-      if(is_admin == 1){
-        $("#project_sched_confirmation").modal('show');
-      }else{
-        if(restrict_ps == 2){
-          $("#project_sched_confirmation").modal('show');
-        }else{
-          alert("Project Schedule is not yet created. You don't have permission to create project schedule!");
-        }
-      }
-     
-    }else{
-      $.post("<?php echo base_url() ?>/project_schedule/project_schedule_list",
-      {
-        proj_id: "<?php echo $project_id ?>"
-      },
-      function(result){
-        $("#project_schedule_div").html(result);
-      }); 
-    }
-
-    $.post("<?php echo base_url() ?>/project_schedule/not_set_works_count",
-    {
-      proj_id: proj_id
-    },
-    function(result){
-      $("#not_set_works_num").html(result);
-    });
-  }); 
-}
-
-
-window.view_send_contractor = function(){
-  var project_id = $('#hidden_proj_id').val();
-  $.post("<?php echo base_url() ?>/works/job_date_entered",
-  {
-    proj_id: '<?php echo $project_id ?>'
-  },
-  function(result){
-
-    job_date = result;
-    if(job_date == ""){
-      $("#tab_send_contractor_cpo").hide();
-    }else{
-      $("#tab_send_contractor_cpo").show();
-    }
-    $.post("<?php echo base_url() ?>/send_emails/display_work_contractor_list", 
-    { 
-      project_id: '<?php echo $project_id ?>'
-    }, 
-    function(result){
-      $("#contractor_list").html(result);
-    });
-    $.post("<?php echo base_url() ?>/send_emails/display_proj_pdf_list", 
-    { 
-      project_id: '<?php echo $project_id ?>'
-    }, 
-    function(result){
-      $("#project_pdf_list").html(result);
-    });
-  });
-  
-}
-
-$("#project_forms").change(function(){
-
-  var form = $("#project_forms").val();
-
-  switch(form){
-    case "1":
-      //var project_id = get_project_id();
-      var file_path = "<?php echo base_url() ?>/works/proj_summary_w_cost/<?php echo $project_id ?>";
-      window.open(file_path,"_blank");
-      // $.post(baseurl+"works/view_send_pdf", 
-      // {
-      // }, 
-      // function(result){
-        //window.open(baseurl+"projects/view/"+proj_id, '_self', true); 
-        $.post("<?php echo base_url() ?>/send_emails/display_proj_pdf_list", 
-        { 
-          project_id: "<?php echo $project_id ?>"
-        }, 
-        function(result){
-          $("#project_pdf_list").html(result);
-        });
-      // });
-      break;
-    case "2":
-      //var project_id = get_project_id();
-      var file_path = "<?php echo base_url() ?>/works/proj_summary_wo_cost/"+proj_id;
-      window.open(file_path,"_blank");
-      $.post("<?php echo base_url() ?>/works/view_send_pdf", 
-      {
-      }, 
-      function(result){
-        //window.open(baseurl+"projects/view/"+proj_id, '_self', true); 
-        $.post("<?php echo base_url() ?>/send_emails/display_proj_pdf_list", 
-        { 
-          project_id: "<?php echo $project_id ?>"
-        }, 
-        function(result){
-          $("#project_pdf_list").html(result);
-        });
-      });
-      break;
-    case "3":
-      //var project_id = get_project_id();
-      var file_path = "<?php echo base_url() ?>/works/proj_joinery_summary_w_cost/"+proj_id;
-      window.open(file_path,"_blank");
-      $.post("<?php echo base_url() ?>/works/view_send_pdf", 
-      {
-      }, 
-      function(result){
-        //window.open(baseurl+"projects/view/"+proj_id, '_self', true); 
-        $.post("<?php echo base_url() ?>/send_emails/display_proj_pdf_list", 
-        { 
-          project_id: "<?php echo $project_id ?>"
-        }, 
-        function(result){
-          $("#project_pdf_list").html(result);
-        });
-      });
-      break;
-    case "4":
-      //var project_id = get_project_id();
-      var file_path = "<?php echo base_url() ?>/works/proj_joinery_summary_wo_cost/"+proj_id;
-      window.open(file_path,"_blank");
-      $.post("<?php echo base_url() ?>/works/view_send_pdf", 
-      {
-      }, 
-      function(result){
-        //window.open(baseurl+"projects/view/"+proj_id, '_self', true); 
-        $.post("<?php echo base_url() ?>/send_emails/display_proj_pdf_list", 
-        { 
-          project_id: "<?php echo $project_id ?>"
-        }, 
-        function(result){
-          $("#project_pdf_list").html(result);
-        });
-      });
-      break;
-    case "5":
-      var file_path = "<?php echo base_url() ?>/works/variation_summary/"+proj_id;
-      window.open(file_path,"_blank");
-       $.post("<?php echo base_url() ?>/works/view_send_pdf", 
-      {
-      }, 
-      function(result){
-        //window.open(baseurl+"projects/view/"+proj_id, '_self', true); 
-        $.post("<?php echo base_url() ?>/send_emails/display_proj_pdf_list", 
-        { 
-          project_id: "<?php echo $project_id ?>"
-        }, 
-        function(result){
-          $("#project_pdf_list").html(result);
-        });
-      });
-      break;
-    case "6":
-      alert("No variation yet");
-      break;
-    case "7":
-      var prog_payment_stat = $("#prog_payment_stat").val();
-      if(prog_payment_stat == 0){
-        alert("Progress Payment is not yest set!");
-      }else{
-        $("#contract_notes").modal("show");
-        var project_id = "<?php echo $project_id ?>";
-        $.post("<?php echo base_url() ?>/works/get_contract_notes",
-        { project_id : "<?php echo $project_id ?>" },
-        function(result){
-          var proj_notes = result.split( '|' );
-
-          $("#contract_date").val(proj_notes[0]);
-          $("#plans_elv_draw").val(proj_notes[1]);
-          $("#sched_work_quotation").val(proj_notes[2]);
-          $("#condition_quote_contract").val(proj_notes[3]);
-        });
-      }
-      break;
-    case "8":
-      window.open('<?php echo base_url() ?>/reports/Request_for_New_Trade_Deptor_Form.pdf', '_blank', 'fullscreen=yes');
-      break;
-  }
-  
-});
 
 </script>
 

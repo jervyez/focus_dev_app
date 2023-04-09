@@ -58,24 +58,24 @@
       <div class="page-nav-options col-md-7 col-sm-8 col-xs-12 pull-right hidden-xs">
         <ul class="nav nav-tabs navbar-right">
           <li class="nav-item">
-            <a href="<?php echo base_url(); ?>"><i class="fa fa-home"></i> Home</a>
+            <a href="<?php echo site_url(); ?>"><i class="fa fa-home"></i> Home</a>
           </li>
           <li>
-            <a href="<?php echo base_url(); ?>induction_health_safety" class = "active"><i class="fa fa-home"></i> Induction Site Staff</a>
+            <a href="<?php echo site_url(); ?>induction_health_safety" class = "active"><i class="fa fa-home"></i> Induction Site Staff</a>
           </li>
           <li>
-            <a href="<?php echo base_url(); ?>induction_health_safety/inductions_projects"><i class="fa fa-home"></i> Induction Projects</a>
+            <a href="<?php echo site_url(); ?>induction_health_safety/inductions_projects"><i class="fa fa-home"></i> Induction Projects</a>
           </li>
            <li>
-            <a href="<?php echo base_url(); ?>induction_health_safety/inductions_videos"><i class="fa fa-home"></i> Uploading Video for Induction</a>
+            <a href="<?php echo site_url(); ?>induction_health_safety/inductions_videos"><i class="fa fa-home"></i> Uploading Video for Induction</a>
           </li>
           <li>
-            <a href="<?php echo base_url(); ?>induction_health_safety/induction_slide_editor_view"><i class="fa fa-home"></i> Induction Slide Templates</a>
+            <a href="<?php echo site_url(); ?>induction_health_safety/induction_slide_editor_view"><i class="fa fa-home"></i> Induction Slide Templates</a>
           </li>
 
           <?php //if($this->session->userdata('is_admin') ==  1 || $this->session->userdata('induction_archive_upload') == 1): ?>
           <li>
-            <a href="<?php echo base_url(); ?>induction_health_safety/archive_documents"><i class="fa fa-file-text-o"></i> Archive Documents</a>
+            <a href="<?php echo site_url(); ?>induction_health_safety/archive_documents"><i class="fa fa-file-text-o"></i> Archive Documents</a>
           </li>
         <?php //endif; ?>
         </ul>

@@ -29,6 +29,7 @@ $routes->group('reports', ['namespace' => 'App\Modules\Reports\Controllers'], fu
 
 
   $subroutes->get('contacts_gen/(:any)'             , 'Reports::contacts_gen/$1');
+  $subroutes->get('myob_names'                      , 'Reports::myob_names');
 
 
 

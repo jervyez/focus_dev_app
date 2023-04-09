@@ -26,6 +26,8 @@ $routes->group('projects', ['namespace' => 'App\Modules\Projects\Controllers'], 
   $subroutes->post('fetch_mark_up_by'                       , 'Projects::fetch_mark_up_by' );
   $subroutes->get('fetch_mark_up_by'                        , 'Projects::fetch_mark_up_by' );
   $subroutes->get('document_storage'                        , 'Projects::document_storage' );
+  $subroutes->get('document_storage/(:any)'                 , 'Projects::document_storage/$1' );
+  $subroutes->get('client_file_storage/(:any)'              , 'Projects::client_file_storage/$1' );
   $subroutes->get('client_file_storage'                     , 'Projects::client_file_storage' );
 
   $subroutes->get('list_projects_by_job_date/(:any)'        , 'Projects::list_projects_by_job_date/$1' );
@@ -34,8 +36,8 @@ $routes->group('projects', ['namespace' => 'App\Modules\Projects\Controllers'], 
   $subroutes->post('update_doc_type'                        , 'Projects::update_doc_type' );
 
   $subroutes->get('view/(:any)'                             , 'Projects::view/$1' );
-  $subroutes->get('view/(:any)/(:any)'                       , 'Projects::view/$1/$2');
-  $subroutes->get('view/(:any)/(:any)/(:any)'                       , 'Projects::view/$1/$2/$3');
+  $subroutes->get('view/(:any)/(:any)'                      , 'Projects::view/$1/$2');
+  $subroutes->get('view/(:any)/(:any)/(:any)'               , 'Projects::view/$1/$2/$3');
   $subroutes->post('quick_update'                           , 'Projects::quick_update' );
   $subroutes->post('list_uploaded_files'                    , 'Projects::list_uploaded_files' );
 
@@ -70,21 +72,15 @@ $routes->group('projects', ['namespace' => 'App\Modules\Projects\Controllers'], 
   $subroutes->get('update_project_details'                  , 'Projects::update_project_details' );
   $subroutes->get('update_project_details/(:any)'           , 'Projects::update_project_details/$1' );
   $subroutes->post('update_project_details'                 , 'Projects::update_project_details' );
-  $subroutes->post('update_project_details/(:any)'           , 'Projects::update_project_details/$1' );
+  $subroutes->post('update_project_details/(:any)'          , 'Projects::update_project_details/$1' );
 
 
-  $subroutes->post('update_feedback'           , 'Projects::update_feedback' );
-  $subroutes->get('delete_project/(:any)'           , 'Projects::delete_project/$1' );
+  $subroutes->post('update_feedback'                        , 'Projects::update_feedback' );
+  $subroutes->get('delete_project/(:any)'                   , 'Projects::delete_project/$1' );
+  $subroutes->post('fetch_project_total_values'             , 'Projects::fetch_project_total_values' );
 
-  $subroutes->post('fetch_project_total_values'           , 'Projects::fetch_project_total_values' );
-
-
-  $subroutes->post('get_work_list'           , 'Projects::get_work_list' );
+  $subroutes->post('get_work_list'                          , 'Projects::get_work_list' );
   $subroutes->post('get_project_site_labour_cost'           , 'Projects::get_project_site_labour_cost' );
-
-  $subroutes->post('copy_report_to_docstroge'           , 'Projects::copy_report_to_docstroge' );
-
-  
 
 
 

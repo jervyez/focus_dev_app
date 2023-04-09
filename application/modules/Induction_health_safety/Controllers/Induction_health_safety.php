@@ -48,6 +48,7 @@ class Induction_health_safety extends BaseController {
     
   }
 
+
   public function archive_documents(){
     $this->admin_m = new Admin_m();
 
@@ -105,58 +106,121 @@ class Induction_health_safety extends BaseController {
     return redirect()->to('/induction_health_safety/archive_documents');
   }
 
+  public function upload_brand_logo(){
+    $brand_id = $this->request->getPost('brand_id');
+
+    if ($this->request->getFileMultiple('userfile')){
+      foreach($this->request->getFileMultiple('userfile') as $file){ // loop through files
+
+        $file_name      = $file->getName();
+        $file_name_arr  = explode('.',$file_name);
+        $file_name_raw  = $file_name_arr[0];
+        $file_ext       = $file_name_arr[1];
+
+        
+        $data_file_name = $brand_id.'.'.$file_ext;
+        $path = "./uploads/brand_logo/";
+        $set_file = $path.$data_file_name;
+
+        if(file_exists($set_file)){   
+          unlink($set_file);
+        }
+
+        $file_name_set = str_replace(' ', '_', $data_file_name);
+        $file_name_set_final = str_replace("'", '`', $file_name_set);
+        $file_name_amp = str_replace('&', '_and_', $file_name_set_final);
+
+        if ($file->isValid() && !$file->hasMoved()) {
+          $file->move(ROOTPATH . $path.'.', $data_file_name);
+          $this->induction_health_safety_m->update_brand($brand_id);
+        }
+      } // loop through files
+    }
+
+
+    return redirect()->to('/projects');
+
+    
+  }
+
+  public function get_brand_logo(){
+    $brand_id = $this->request->getPost('brand_id');
+    $query = $this->induction_health_safety_m->get_brand_logo($brand_id);
+    echo $query;
+  }
+
   public function upload_docs_ind(){
     $date = date("d/m/Y");    
-    $time = time();    
+    $time = time();
+    $counter = 1;
 
     $archive_registry_types = $_POST['archive_registry_types'];
     $archive_registry_name =    substr( strtolower(  str_replace(' ','_',  $_POST['archive_registry_name'] )) ,  0, 5);
     $user_id = $this->session->get('user_id');
 
-
-
     $path = "./docs/doc_archives";
     if(!is_dir($path)){
       mkdir($path, 0755, true);
     }
-        //upload an image options
-        $config = array();
-        $config['upload_path'] = $path."/";
-        $config['allowed_types'] = '*';
-        $config['max_size']      = '0';
-        $config['overwrite']     = FALSE;
-
-        $this->upload->initialize($config);
-
-        $this->load->library('upload');
-
-        $files = $_FILES;
-        $cpt = count($_FILES['archive_files']['name']);
-        for($i=0; $i<$cpt; $i++){   
-
-          $file_name = $files['archive_files']['name'][$i];
-          $path_parts = pathinfo($file_name);
-          $extension = strtolower($path_parts['extension']);
 
 
-          $data_file_name = $archive_registry_name.'_'.$time.'_'.$i.'.'.$extension;
-          $_FILES['archive_files']['name']= $data_file_name;//$files['archive_files']['name'][$i];
 
 
-            $_FILES['archive_files']['type']= $files['archive_files']['type'][$i];
-          $_FILES['archive_files']['tmp_name']= $files['archive_files']['tmp_name'][$i];
-            $_FILES['archive_files']['error']= $files['archive_files']['error'][$i];
-          $_FILES['archive_files']['size']= $files['archive_files']['size'][$i];    
 
-          if ( !$this->upload->do_upload('archive_files')) {
-          echo $this->upload->display_errors();
-      }else{
-        $this->induction_health_safety_m->insert_uploaded_file($archive_registry_types,$user_id,$date,$data_file_name);
-      }
+
+
+    if ($this->request->getFileMultiple('archive_files')){
+      foreach($this->request->getFileMultiple('archive_files') as $file){ // loop through files
+
+        $file_name      = $file->getName();
+        $file_name_arr  = explode('.',$file_name);
+        $file_name_raw  = $file_name_arr[0];
+        $file_ext       = $file_name_arr[1];
+
+        // $file_name_set = str_replace(' ', '_', $data_file_name);
+        // $file_name_set_final = str_replace("'", '`', $file_name_set);
+        // $file_name_amp = str_replace('&', '_and_', $file_name_set_final);
+
+        $data_file_name = $archive_registry_name.'_'.$time.'_'.$counter.'.'.$file_ext;
+
+        if ($file->isValid() && !$file->hasMoved()) {
+          $file->move(ROOTPATH . $path.'/', $data_file_name);
+          $this->induction_health_safety_m->insert_uploaded_file($archive_registry_types,$user_id,$date,$data_file_name);
+          $counter++;
+
+        }else{
+          $upload_error = $file->getError();
+          exit;
         }
 
-      //  $new_expiry_date = date('d/m/Y', strtotime('+12 months'));
-        $this->induction_health_safety_m->update_archive_expiry($user_id, $archive_registry_types);
+      } // loop through files
+      
+      $this->induction_health_safety_m->update_archive_expiry($user_id, $archive_registry_types);
+    }
+
+/*
+
+    $files = $_FILES;
+    $cpt = count($_FILES['archive_files']['name']);
+    for($i=0; $i<$cpt; $i++){   
+
+      $file_name = $files['archive_files']['name'][$i];
+      $path_parts = pathinfo($file_name);
+      $extension = strtolower($path_parts['extension']);
+
+
+      $data_file_name = $archive_registry_name.'_'.$time.'_'.$i.'.'.$extension;
+      $_FILES['archive_files']['name']= $data_file_name;//$files['archive_files']['name'][$i];
+      $_FILES['archive_files']['type']= $files['archive_files']['type'][$i];
+      $_FILES['archive_files']['tmp_name']= $files['archive_files']['tmp_name'][$i];
+      $_FILES['archive_files']['error']= $files['archive_files']['error'][$i];
+      $_FILES['archive_files']['size']= $files['archive_files']['size'][$i];    
+
+
+
+    }
+*/
+    //  $new_expiry_date = date('d/m/Y', strtotime('+12 months'));
 
 
     return redirect()->to('/induction_health_safety/archive_documents');

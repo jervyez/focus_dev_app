@@ -23,7 +23,7 @@ $routes->group('induction_health_safety', ['namespace' => 'App\Modules\Induction
 
  $subroutes->add('remove_archive_doc/(:any)'                       , 'Induction_health_safety::remove_archive_doc/$1' );
 
- $subroutes->add('upload_docs_ind'                       , 'Induction_health_safety::upload_docs_ind' );
+ $subroutes->post('upload_docs_ind'                       , 'Induction_health_safety::upload_docs_ind' );
 
  $subroutes->post('view_focus_site_staff'                       , 'Induction_health_safety::view_focus_site_staff' );
 
@@ -111,8 +111,13 @@ $routes->group('induction_health_safety', ['namespace' => 'App\Modules\Induction
    $subroutes->add('generated_selected_pdf'                       , 'Induction_health_safety::generated_selected_pdf' );
 
    $subroutes->post('set_cleared_slides'                       , 'Induction_health_safety::set_cleared_slides' );
+
+
+
+   $subroutes->post('upload_brand_logo'                       , 'Induction_health_safety::upload_brand_logo' );
+   $subroutes->post('get_brand_logo'                          , 'Induction_health_safety::get_brand_logo' );
    
-   
+
 
 
 
